@@ -72,7 +72,7 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
 
 	### initialize variables
 
-	timenames<-sort(unique(time))
+	timenames<-unique(time)
 	time<-factor(time)
 	subject<-factor(subject)
 	group<-factor(group)
@@ -98,7 +98,7 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
 	Omat <- matrix(NA, N, T)
 	Rmat <-  matrix(NA, N, T)
 	Lamdamat <-  matrix(NA, N, T)
-	sort1<-sort(unique(time))
+	sort1<-unique(time)
 
 	for(i in 1:T)
 	{

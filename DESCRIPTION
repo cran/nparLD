@@ -1,14 +1,14 @@
 Package: nparLD
-Version: 1.0
-Date: 2009-09-014
+Version: 1.1
+Date: 2009-10-14
 Title: Nonparametric Analysis of Longitudinal Data in Factorial
         Experiments
-Author: Kimihiro Noguchi <knoguchi@uwaterloo.ca>, Mahbub Latif
+Author: Kimihiro Noguchi <knoguchi@wald.ucdavis.edu>, Mahbub Latif
         <mlatif@gwdg.de>, Karthinathan Thangavelu <kthanga@gwdg.de>,
         Frank Konietschke <fkoniet@gwdg.de>, Yulia R. Gel
         <ygl@math.uwaterloo.ca>, Edgar Brunner
         <brunner@ams.med.uni-goettingen.de>
-Maintainer: Kimihiro Noguchi <knoguchi@uwaterloo.ca>
+Maintainer: Kimihiro Noguchi <knoguchi@wald.ucdavis.edu>
 Depends: R (>= 2.6.0), MASS
 License: GPL (>= 2)
 Description: The package "nparLD" is designed to perform nonparametric
@@ -20,6 +20,6 @@ Description: The package "nparLD" is designed to perform nonparametric
         data types (continuous, discrete, purely ordinal, and
         dichotomous). Such methods are also robust with respect to
         outliers and for small sample sizes.
-Packaged: Wed Sep 16 14:05:03 2009; KNoguchi
+Packaged: Wed Oct 14 19:51:41 2009; KNoguchi
 Repository: CRAN
-Date/Publication: 2009-09-18 20:25:50
+Date/Publication: 2009-10-15 11:08:59

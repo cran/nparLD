@@ -73,8 +73,8 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
 	CTcount <- C*T
 	RD <- rank(var)
 	N <- length(unique(subject))
-        sort1<-sort(unique(time1))
-        sort2<-sort(unique(time2))
+        sort1<-unique(time1)
+        sort2<-unique(time2)
         uvector <- double(length(RD)) 
 
 	for(i in 1:length(RD))
@@ -272,7 +272,7 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
 
 		WaldType <- data.frame(W, dfW, pW)
 		rd.WaldType <- round(WaldType, Inf)
-		Wdesc <- rbind(time2.name, time1.name, paste(time2.name,":", time1.name, sep=""))
+		Wdesc <- rbind(time1.name, time2.name, paste(time1.name,":", time2.name, sep=""))
 		colnames(rd.WaldType) <- c("Statistic", "df", "p-value")
 		rownames(rd.WaldType) <- Wdesc
 
@@ -314,7 +314,7 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
 
 		BoxType <- data.frame(B, dfB, pB)
 		rd.BoxType <- round(BoxType, Inf)
-		Bdesc <- rbind(time2.name, time1.name, paste(time2.name,":", time1.name, sep=""))
+		Bdesc <- rbind(time1.name, time2.name, paste(time1.name,":", time2.name, sep=""))
 		colnames(rd.BoxType) <- c("Statistic", "df", "p-value")
 		rownames(rd.BoxType) <- Bdesc
    

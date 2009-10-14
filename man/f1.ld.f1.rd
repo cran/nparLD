@@ -45,6 +45,10 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
   \item{covariance}{the covariance matrix.}
 }
 
+\note{
+Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
+}
+
 \references{
 
 Box, G.E.P. (1954). Some theorems on quadratic forms applied in the study of analysis of variance problems, I. Effect of inequality of variance in the one-way classification. \emph{Annals of Mathematical Statistics}, 25, 290-302.\cr

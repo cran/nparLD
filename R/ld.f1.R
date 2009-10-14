@@ -127,7 +127,7 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
            cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       }
            utimetemp<-unique(time)
-           utime<-sort(utimetemp)
+           utime<-utimetemp
            ulength<-length(utime)
            SOURCE<-double(ulength)
            for(i in 1:ulength)

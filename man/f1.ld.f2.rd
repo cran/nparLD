@@ -36,6 +36,10 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
   \item{covariance}{the covariance matrix.}
 }
 
+\note{
+Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
+}
+
 \references{
 
 Brunner, E., Domhof, S., and Langer, F. (2002). \emph{Nonparametric Analysis of Longitudinal Data in Factorial Experiments},

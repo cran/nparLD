@@ -83,8 +83,8 @@ time2.name = "TimeT", group.name = "GroupA", description=TRUE) {
 	CTcount <- C*T
 	RD <- rank(D)
 	uvector <- double(N)
-	sort1 <- sort(unique(time1))
-	sort2 <- sort(unique(time2))
+	sort1 <- unique(time1)
+	sort2 <- unique(time2)
 	Rmat <- matrix(NA, N, CTcount)
 	Lamdamat <- matrix(NA, N, CTcount)
 

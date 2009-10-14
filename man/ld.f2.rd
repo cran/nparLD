@@ -34,6 +34,10 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
   \item{covariance}{the covariance matrix.}
 }
 
+\note{
+Version 1.0 of the ld.f2 function had problems with calculations of the statistics, and the issues have been resolved in Version 1.1. We thank Dr. Stefano Burigat for pointing out the problems. Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
+}
+
 \references{
 
 Brunner, E., Domhof, S., and Langer, F. (2002). \emph{Nonparametric Analysis of Longitudinal Data in Factorial Experiments},
@@ -63,16 +67,16 @@ time1.name="Day",time2.name="Time",description=FALSE)
 ex.f2$Wald.test
 
 #          Statistic df      p-value
-#Time      0.6761043  1 4.109314e-01
-#Day      35.8647640  3 7.997949e-08
-#Time:Day 14.3020921  3 2.521503e-03
+#Day       0.6761043  1 4.109314e-01
+#Time     35.8647640  3 7.997949e-08
+#Day:Time 14.3020921  3 2.521503e-03
 
 ## ANOVA-type statistic
 ex.f2$ANOVA.test
 
 #          Statistic       df      p-value
-#Time      0.6761043 1.000000 4.109334e-01
-#Day      14.2671950 2.858344 5.883893e-09
-#Time:Day  5.2242782 2.184249 4.151609e-03
+#Day       0.6761043 1.000000 4.109334e-01
+#Time     14.2671950 2.858344 5.883893e-09
+#Day:Time  5.2242782 2.184249 4.151609e-03
 }
 \keyword{htest}

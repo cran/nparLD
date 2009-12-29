@@ -34,6 +34,14 @@ group2<-rep(shoulder[,"Gender"],6)
 subject<-rep(shoulder[,"Patient"],6)
 ex.f2f1<-f2.ld.f1(var, time, group1, group2, subject, time.name = "Time", 
 group1.name = "Treatment", group2.name = "Gender", description=FALSE)
+# Check that the order of the time, group1, and group2 levels are correct.
+# Time level:   1 2 3 4 5 6 
+# Group1 level:   Y N 
+# Group2 level:   F M 
+# If the order is not correct, specify the correct order in time.order, group1.order, or group2.order.
+#
+# Warning(s):
+# The covariance matrix is singular. 
 
 ## Wald-type statistic 
 ex.f2f1$Wald.test

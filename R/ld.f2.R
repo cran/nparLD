@@ -8,10 +8,12 @@
 #               time1.name: time1 factor name. Default is set to Time_C
 #               time2.name: time2 factor names. Default is set to Time_T
 #               description: description of the output. Default is set to TRUE (show description)
+#		time1.order: a vector of time1 levels specifying the order.
+#		time2.order: a vector of time2 levels specifying the order.
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name = "TimeT", description=TRUE) 
+ld.f2 <- function(var, time1, time2, subject, time1.name="TimeC", time2.name="TimeT", description=TRUE, time1.order=NULL, time2.order=NULL) 
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -21,10 +23,13 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
 #         Version:  01-01
 #         Date: March 1, 2003
 #
-#
 #        Editied by: Kimihiro Noguchi
 #         Version:  01-02
 #         Date: August 14, 2009
+#
+#        Editied by: Kimihiro Noguchi
+#         Version:  01-03
+#         Date: December 23, 2009
 #
 #    Key Variables:
 #                time1: time1 factor
@@ -63,25 +68,102 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
 	   if((sublen!=varlen)||(sublen!=tim1len)||(sublen!=tim2len))
 		stop("At least one of the input parameters (var, time1, time2, or subject) has a different length.")
 
-
-
 	library(MASS)
-	time1 <- factor(time1)
-	time2 <- factor(time2)
-	C <- nlevels(time1)
-	T <- nlevels(time2)
+
+	sorts<-unique(subject)
+	sort1<-unique(time1)
+	sort2<-unique(time2)
+	C <- length(sort1)
+	T <- length(sort2)
+	N <- length(sorts)
+	uvector<-double(length(var))
+
+	if((C*T*N)!=length(var))
+		stop("Number of levels of subject (",N, ") times number of levels of time1 (",C,") times number of levels of time2 (",T,") 
+		is not equal to the total number of observations (",length(var),").",sep="")
+
+#    time order vectors
+
+	   if(!is.null(time1.order))
+	   {
+		sort1 <- time1.order
+		sort12 <- unique(time1)
+
+		if(length(sort1)!=length(sort12))	# if the levels of the order is different from the one in the data
+		stop("Length of the time1.order vector (",length(sort1), ") 
+		is not equal to the levels of time1 vector (",length(sort12),").",sep="")
+
+		if(mean(sort(sort1)==sort(sort12))!=1)     # if the elements in the time1.order is different from the time1 levels
+		stop("Elements in the time1.order vector is different from the levels specified in the time1 vector.",sep="")		
+	   }
+
+	   if(!is.null(time2.order))
+	   {
+		sort2 <- time2.order
+		sort22 <- unique(time2)
+
+		if(length(sort2)!=length(sort22))	# if the levels of the order is different from the one in the data
+		stop("Length of the time2.order vector (",length(sort2), ") 
+		is not equal to the levels of time2 vector (",length(sort22),").",sep="")
+
+		if(mean(sort(sort2)==sort(sort22))!=1)     # if the elements in the time2.order is different from the time levels
+		stop("Elements in the time2.order vector is different from the levels specified in the time2 vector.",sep="")		
+	   }
+
+#    sort data
+
+	newtime1<-double(length(var))
+	newtime2<-double(length(var))
+
+	for(i in 1:length(var))
+        {
+         uvector[i]<-T*which(sort1==time1[i])+which(sort2==time2[i])-T
+	 newtime1[i]<-which(sort1==time1[i])
+	 newtime2[i]<-which(sort2==time2[i])
+        }  
+
+	sortvector<-double(length(var))
+	newsubject<-double(length(var))
+
+	for(i in 1:length(var))
+        {
+           row<-which(subject[i]==sorts)
+	   col<-uvector[i]
+	   newsubject[i]<-row
+	   sortvector[((col-1)*N+row)]<-i
+        }   
+	
+#    relabel the time and subject vectors (to deal with factor variables)
+
+	subject<-newsubject[sortvector]
+	var<-var[sortvector]
+	time1<-newtime1[sortvector]
+	time2<-newtime2[sortvector]
+
+	time1<-factor(time1)
+	time2<-factor(time2)
+
+#    pass the original sort variables to origsort, and assign new ones
+
+	origsort1<-sort1
+	origsort2<-sort2
+
+	sort1<-unique(time1)
+	sort2<-unique(time2)
+
+#    convert to ranks and calculate statistics
+
+	
 	CTcount <- C*T
 	RD <- rank(var)
 	N <- length(unique(subject))
-        sort1<-unique(time1)
-        sort2<-unique(time2)
         uvector <- double(length(RD)) 
 
 	for(i in 1:length(RD))
         {
          uvector[i]<-T*which(sort1==time1[i])+which(sort2==time2[i])-T
         }
-
+	
         Lamda <- 1-as.numeric(is.na(var))
         RMeans<-tapply(RD*Lamda,uvector,sum)/tapply(Lamda,uvector,sum)
         Nobs<-tapply(Lamda,uvector,sum)
@@ -112,6 +194,7 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
         }
         Rr<-Rr*Rrl
 
+	# this could be dangerous #
 	origRmat <- matrix(RD, N, CTcount)
 	NN <- sum(Lamda)
 	Lamdamat <- matrix(Lamda, N, CTcount)
@@ -141,6 +224,10 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
            cat(" covariance = Covariance matrix","\n")
            cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       	}
+           cat(" Check that the order of the time1 and time2 levels are correct.\n") 
+           cat(" Time1 level:  " , paste(origsort1),"\n")
+           cat(" Time2 level:  " , paste(origsort2),"\n")
+           cat(" If the order is not correct, specify the correct order in time1.order or time2.order.\n\n")
 
         Rmeanstime1<-tapply(RD*Lamda,time1,sum)/tapply(Lamda,time1,sum)
         Nobstime1<-tapply(Lamda,time1,sum)  
@@ -152,8 +239,8 @@ ld.f2 <- function(var, time1, time2, subject, time1.name = "TimeC", time2.name =
 
 	RTE <- (RMeans - 0.5)/NN
 
-	time1.vec  <- c(paste(time1.name, sort1,sep=""))
-	time2.vec <- c(paste(time2.name, sort2,sep=""))
+	time1.vec  <- c(paste(time1.name, origsort1,sep=""))
+	time2.vec <- c(paste(time2.name, origsort2,sep=""))
 
 	fn.nice.out <- function(n1, n2) 
 	{

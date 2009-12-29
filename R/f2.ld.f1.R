@@ -10,11 +10,15 @@
 #               group1.name: group1 factor names. Default is set to GroupA
 #               group2.name: group2 factor names. Default is set to GroupB
 #               description: description of the output. Default is set to TRUE (show description)
+#		time.order: a vector of time levels specifying the order.
+#		group1.order: a vector of group1 levels specifying the order.
+#		group2.order: a vector of group2 levels specifying the order.
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-f2.ld.f1 <- function(var, time, group1, group2, subject, time.name = "Time", 
-group1.name = "GroupA", group2.name = "GroupB", description=TRUE) 
+f2.ld.f1 <- function(var, time, group1, group2, subject, time.name="Time", 
+group1.name="GroupA", group2.name="GroupB", description=TRUE, 
+time.order=NULL, group1.order=NULL, group2.order=NULL) 
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -28,6 +32,11 @@ group1.name = "GroupA", group2.name = "GroupB", description=TRUE)
 #        Editied by: Kimihiro Noguchi
 #         Version:  01-02
 #         Date: August 21, 2009
+#
+#
+#        Editied by: Kimihiro Noguchi
+#         Version:  01-03
+#         Date: December 24, 2009
 #
 #    Key Variables:
 #                time: time factor
@@ -62,7 +71,120 @@ group1.name = "GroupA", group2.name = "GroupB", description=TRUE)
 	   if((sublen!=varlen)||(sublen!=timlen)||(sublen!=gro1len)||(sublen!=gro2len))
 		stop("At least one of the input parameters (var, time, group1, group2, or subject) has a different length.")
 
-	library(MASS)
+	   library(MASS)
+
+	   tlevel <- unique(time)
+	   slevel <- unique(subject)
+	   g1level <- unique(group1)
+	   g2level <- unique(group2)
+	   t <- length(tlevel)
+	   s <- length(slevel)
+	   a <- length(g1level)
+	   b <- length(g2level)
+
+	   if((t*s)!=length(var))
+	   stop("Number of levels of subject (",s, ") times number of levels of time (",t,") 
+	   is not equal to the total number of observations (",length(var),").",sep="")
+
+#    time and group order vectors
+
+	   if(!is.null(time.order))
+	   {
+		tlevel <- time.order
+		tlevel2 <- unique(time)
+
+		if(length(tlevel)!=length(tlevel2))	# if the levels of the order is different from the one in the data
+		stop("Length of the time.order vector (",length(tlevel), ") 
+		is not equal to the levels of time vector (",length(tlevel2),").",sep="")
+
+		if(mean(sort(tlevel)==sort(tlevel2))!=1)     # if the elements in the time.order is different from the time levels
+		stop("Elements in the time.order vector is different from the levels specified in the time vector.",sep="")		
+	   }
+
+	   if(!is.null(group1.order))
+	   {
+		g1level <- group1.order
+		g1level2 <- unique(group1)
+
+		if(length(g1level)!=length(g1level2))	# if the levels of the order is different from the one in the data
+		stop("Length of the group1.order vector (",length(g1level), ") 
+		is not equal to the levels of group1 vector (",length(g1level2),").",sep="")
+
+		if(mean(sort(g1level)==sort(g1level2))!=1)     # if the elements in the group1.order is different from the group1 levels
+		stop("Elements in the group1.order vector is different from the levels specified in the group1 vector.",sep="")		
+	   }
+
+	   if(!is.null(group2.order))
+	   {
+		g2level <- group2.order
+		g2level2 <- unique(group2)
+
+		if(length(g2level)!=length(g2level2))	# if the levels of the order is different from the one in the data
+		stop("Length of the group2.order vector (",length(g2level), ") 
+		is not equal to the levels of group2 vector (",length(g2level2),").",sep="")
+
+		if(mean(sort(g2level)==sort(g2level2))!=1)     # if the elements in the group2.order is different from the group2 levels
+		stop("Elements in the group2.order vector is different from the levels specified in the group2 vector.",sep="")		
+	   }
+
+	#    sort data
+
+	newgroup1<-double(length(var))
+	newgroup2<-double(length(var))
+	gvector<-double(length(var))
+ 
+	for(i in 1:length(var))
+	{
+          gvector[i]<-b*which(g1level==group1[i])+which(g2level==group2[i])-b
+	  newgroup1[i]<-which(g1level==group1[i])
+	  newgroup2[i]<-which(g2level==group2[i])
+        }  
+
+	sortvector<-double(length(var))
+	newsubject<-double(length(var))
+	newtime<-double(length(var))
+
+	for(i in 1:length(var))
+        {
+          row<-which(subject[i]==slevel)
+	  col<-which(time[i]==tlevel)
+	  newsubject[i]<-row
+	  newtime[i]<-col
+	  sortvector[((col-1)*s+row)]<-i
+        }   
+	
+	subject<-newsubject[sortvector]
+	var<-var[sortvector]
+	time<-newtime[sortvector]
+	group1<-newgroup1[sortvector]
+	group2<-newgroup2[sortvector]
+
+        #    sort again by group, and assign new subject numbers to subjects
+
+	grouptemp<-order(gvector[1:s])
+	groupplus<-(rep(c(0:(t-1)),e=s))*s
+	groupsort<-(rep(grouptemp,t))+groupplus
+	
+	subject<-rep(c(1:s),t)
+	var<-var[groupsort]
+	time<-time[groupsort]
+	group1<-group1[groupsort]
+	group2<-group2[groupsort]
+
+	#    pass the original sort variables to origsort, and assign new ones
+
+	origg1level<-g1level
+	origg2level<-g2level
+	origtlevel<-tlevel
+	origslevel<-slevel
+
+	g1level<-unique(group1)
+	g2level<-unique(group2)
+	tlevel<-unique(time)
+	slevel<-unique(subject)
+
+	#    organize data
+
 	factor1<-group1
 	factor2<-group2
 	factor1.name<-group1.name
@@ -76,8 +198,8 @@ group1.name = "GroupA", group2.name = "GroupB", description=TRUE)
 	varL <- 1-is.na(var)
 
 	T<-nlevels(time)
-	A<-nlevels(factor1)
-	B<-nlevels(factor2)
+	A<-nlevels(FAC.1)
+	B<-nlevels(FAC.2)
 
 	vmat<-matrix(ncol=T, nrow=length(var)/T)
 	Lamdamat<-matrix(ncol=T, nrow=length(var)/T)
@@ -96,6 +218,8 @@ group1.name = "GroupA", group2.name = "GroupB", description=TRUE)
 			fact2<-factor2[which(time==tlevel[i])]
 			FAC.1<-fact1[ordering]
 			FAC.2<-fact2[ordering]
+			FAC.1<-factor(FAC.1)
+			FAC.2<-factor(FAC.2)
 		}
  		vmat[,i]<-tempV[ordering]
  		Lamdamat[,i]<-tempL[ordering]
@@ -219,22 +343,22 @@ group1.name = "GroupA", group2.name = "GroupB", description=TRUE)
 	fn.nice.out <- function(A, B, T) 
 	{
 		SOURCE <- rep(0,0)
-		for(i in 1:A) SOURCE <- c(SOURCE, paste(factor1.name, facs.1[i],sep=""))
-		for(i in 1:B) SOURCE <- c(SOURCE, paste(factor2.name, facs.2[i],sep="")) 
-		for(i in 1:T) SOURCE <- c(SOURCE, paste(time.name, time.vec[i],sep=""))
+		for(i in 1:A) SOURCE <- c(SOURCE, paste(factor1.name, origg1level[i],sep=""))
+		for(i in 1:B) SOURCE <- c(SOURCE, paste(factor2.name, origg2level[i],sep="")) 
+		for(i in 1:T) SOURCE <- c(SOURCE, paste(time.name, origtlevel[i],sep=""))
 		for(i in 1:A) 
 			for(j in 1:B) 
-				SOURCE <- c(SOURCE, paste(factor1.name,facs.1[i],":",factor2.name,facs.2[j],sep=""))
+				SOURCE <- c(SOURCE, paste(factor1.name,origg1level[i],":",factor2.name,origg2level[j],sep=""))
 		for(i in 1:A)
 			for(j in 1:T)
-				SOURCE <- c(SOURCE, paste(factor1.name,facs.1[i],":",time.name,time.vec[j],sep=""))
+				SOURCE <- c(SOURCE, paste(factor1.name,origg1level[i],":",time.name,origtlevel[j],sep=""))
 		for(i in 1:B)
 			for(j in 1:T)
-				SOURCE <- c(SOURCE, paste(factor2.name,facs.2[i],":",time.name,time.vec[j],sep=""))
+				SOURCE <- c(SOURCE, paste(factor2.name,origg2level[i],":",time.name,origtlevel[j],sep=""))
 		for(i in 1:A)
 			for(j in 1:B)
 				for(k in 1:T)
-					SOURCE <- c(SOURCE, paste(factor1.name,facs.1[i],":",factor2.name,facs.2[j],":",time.name,time.vec[k],sep=""))
+				SOURCE <- c(SOURCE, paste(factor1.name,origg1level[i],":",factor2.name,origg2level[j],":",time.name,origtlevel[k],sep=""))
 
 		return(SOURCE) 
 	}
@@ -299,6 +423,11 @@ group1.name = "GroupA", group2.name = "GroupB", description=TRUE)
            	cat(" covariance = Covariance matrix","\n")
            	cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
 	}
+           	cat(" Check that the order of the time, group1, and group2 levels are correct.\n") 
+           	cat(" Time level:  " , paste(origtlevel),"\n")
+           	cat(" Group1 level:  " , paste(origg1level),"\n")
+           	cat(" Group2 level:  " , paste(origg2level),"\n")
+           	cat(" If the order is not correct, specify the correct order in time.order, group1.order, or group2.order.\n\n")
 
 	### Statistics calculation
 

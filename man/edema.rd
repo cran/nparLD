@@ -32,6 +32,11 @@ group<-rep(edema[,"Group"],8)
 subject<-rep(edema[,"Patient"],8)
 ex.f1f2<-f1.ld.f2(var, time1, time2, group, subject, time1.name = "Hand", 
 time2.name = "Day", group.name = "Treatment", description=FALSE)
+# Check that the order of the time1, time2, and group levels are correct.
+# Time1 level:   Healthy Operated 
+# Time2 level:   -1 1 3 5 
+# Group level:   Drug Placebo 
+# If the order is not correct, specify the correct order in time1.order, time2.order, or group.order.
 
 ## Wald-type statistic 
 ex.f1f2$Wald.test

@@ -32,6 +32,10 @@ w.g<-c(1:4)
 w.pat<-rbind(c(1:5), c(1:5), c(1:5), c(1:5))
 ex.f1f1.3<-f1.ld.f1(var,time,group,subject,w.pat,w.t,w.g,
 time.name="Hour",group.name="Drug",description=FALSE)
+# Check that the order of the time and group levels are correct.
+# Time level:   0 2 6 8 12 
+# Group level:   Propanolol Dobutamine Fenoterol Placebo 
+# If the order is not correct, specify the correct order in time.order or group.order.
 
 ## Wald-type statistic
 ex.f1f1.3$Wald.test

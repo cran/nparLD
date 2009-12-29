@@ -7,11 +7,12 @@ This function performs several tests for the relative treatment effects with glo
 
 \usage{
 f1.ld.f2(var, time1, time2, group, subject, time1.name="TimeC", 
-time2.name="TimeT", group.name="GroupA", description=TRUE)
+time2.name="TimeT", group.name="GroupA", description=TRUE, 
+time1.order=NULL, time2.order=NULL, group.order=NULL)
 }
 
 \arguments{
-  \item{var}{a vector of variable of interest; missing values should be specified as NA.}
+  \item{var}{a vector of numeric variable of interest; missing values should be specified as NA.}
   \item{time1}{a vector of the first sub-plot factor variable. See Details for more explanation.}
   \item{time2}{a vector of the second sub-plot factor variable. See Details for more explanation.}
   \item{group}{a vector of the whole-plot factor variable. See Details for more explanation.}
@@ -20,6 +21,9 @@ time2.name="TimeT", group.name="GroupA", description=TRUE)
   \item{time2.name}{name of the time2 vector; the default option is "TimeT".}
   \item{group.name}{name of the group vector; the default option is "GroupA".}
   \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time1.order}{a character or numeric vector specifying the order of the time1 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{time2.order}{a character or numeric vector specifying the order of the time2 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{group.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
 }
 
 \details{
@@ -34,10 +38,6 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
   \item{Wald.test}{the test statistic, degrees of freedom (df), and corresponding p-value of the Wald-type test.}
   \item{ANOVA.test}{the test statistic, degrees of freedom (df), and corresponding p-value of the ANOVA-type test.}
   \item{covariance}{the covariance matrix.}
-}
-
-\note{
-Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
 }
 
 \references{
@@ -59,13 +59,20 @@ R. Oldenbourg Verlag, Munchen Wien.
 data(edema)
 var<-c(edema[,"n01"],edema[,"n1"],edema[,"n3"],edema[,"n5"],
 edema[,"o01"],edema[,"o1"],edema[,"o3"],edema[,"o5"])
-time1<-factor(c(rep("Healthy",232),rep("Operated",232)))
+time1<-c(rep("Healthy",232),rep("Operated",232))
 time2<-c(rep(-1,58),rep(1,58),rep(3,58),rep(5,58),
 rep(-1,58),rep(1,58),rep(3,58),rep(5,58))
 group<-rep(edema[,"Group"],8)
 subject<-rep(edema[,"Patient"],8)
 ex.f1f2<-f1.ld.f2(var, time1, time2, group, subject, time1.name = "Hand", 
-time2.name = "Day", group.name = "Treatment", description=FALSE)
+time2.name = "Day", group.name = "Treatment", description=FALSE, 
+time1.order=c("Healthy","Operated"), time2.order=c(-1,1,3,5), 
+group.order=c("Drug","Placebo"))
+# Check that the order of the time1, time2, and group levels are correct.
+# Time1 level:   Healthy Operated 
+# Time2 level:   -1 1 3 5 
+# Group level:   Drug Placebo 
+# If the order is not correct, specify the correct order in time1.order, time2.order, or group.order.
 
 ## Wald-type statistic 
 ex.f1f2$Wald.test

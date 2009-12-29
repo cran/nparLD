@@ -8,10 +8,11 @@
 #               w.pat: pattern for the pattern alternatives
 #		time.name: name of the time vector. "Time" is set as default.
 #               description: description of the output. Default is set to TRUE (show description)
+#		time.order: a vector of time levels specifying the order.
 #   Output:
 #             list of relative treatment effects, test results, pattern results, covariance matrix
 #  
-ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE)
+ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.order=NULL)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -27,13 +28,17 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
 #         Version:  01-02
 #         Date: August 14, 2009
 #
+#        Editied by: Kimihiro Noguchi
+#         Version:  01-03
+#         Date: December 23, 2009
+#
 #    Key Variables:
 #                time: time factor
 #                t: number of levels of time
 #                N: total number of observations + missing observations
 #                ind: indicator of whether there exists a missing observation (0=Yes,1=No)
 #                Nmiss: total number of missing observations
-#                subject: total number of subject
+#                n: total number of subject
 #                rankvar: ranks of the variable of interest
 #                rankmean: mean rank for each level of time
 #                Nobs: total number of observations for each level of time
@@ -66,12 +71,58 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
 #    initialize parameters
 
            library(MASS)
-           time <- factor(time)
-           t <- nlevels(time)
+	   tlevel <- unique(time)
+	   slevel <- unique(subject)
+	   t <- length(tlevel)
+	   s <- length(slevel)
            N <- length(var)
-           ind <- 1-is.na(var)
-           Nmiss <- N-sum(ind)
-           n <- length(unique(subject))
+
+	   if((t*s)!=N)
+		stop("Number of levels of subject (",s, ") times number of levels of time (",t,") 
+		is not equal to the total number of observations (",N,").",sep="")
+
+#    time order vector
+
+	   if(!is.null(time.order))
+	   {
+		tlevel <- time.order
+		tlevel2 <- unique(time)
+
+		if(length(tlevel)!=length(tlevel2))	# if the levels of the order is different from the one in the data
+		stop("Length of the time.order vector (",length(tlevel), ") 
+		is not equal to the levels of time vector (",length(tlevel2),").",sep="")
+
+		if(mean(sort(tlevel)==sort(tlevel2))!=1)     # if the elements in the time.order is different from the time levels
+		stop("Elements in the time.order vector is different from the levels specified in the time vector.",sep="")		
+	   }
+
+#    sort data
+
+	sortvector<-double(N)
+	newtime<-double(N)
+	newsubject<-double(N)
+
+	   for(i in 1:N)
+           {
+           	row<-which(subject[i]==slevel)
+	  	col<-which(time[i]==tlevel)
+		newsubject[i]<-row
+		newtime[i]<-col
+		sortvector[((col-1)*s+row)]<-i
+           }   
+	
+#    relabel the time and subject vectors (to deal with factor variables)
+
+	    subject<-newsubject[sortvector]
+	    var<-var[sortvector]
+	    time<-newtime[sortvector]
+	    time<-factor(time)
+
+#    calculate attributes of data
+
+        ind <- 1-is.na(var)
+        Nmiss <- N-sum(ind)
+        n <- length(unique(subject))
 
 #    Output for the number of observations, missing observations, and subject
 
@@ -126,8 +177,12 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
            cat(" covariance = Covariance matrix","\n")
            cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       }
-           utimetemp<-unique(time)
-           utime<-utimetemp
+           cat(" Check that the order of the time level is correct.\n") 
+           cat(" Time level:  " , paste(tlevel),"\n")
+           cat(" If the order is not correct, specify the correct order in time.order.\n\n")
+
+           
+           utime<-tlevel
            ulength<-length(utime)
            SOURCE<-double(ulength)
            for(i in 1:ulength)

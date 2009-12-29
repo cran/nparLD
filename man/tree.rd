@@ -32,6 +32,10 @@ w.g<-c(1:3)
 w.pat <- rbind(c(1:4), c(1:4), c(1:4))
 ex.f1f1<-f1.ld.f1(var,time,group,subject,w.pat,w.t,w.g,
 time.name="Year",group.name="Area",description=FALSE)
+# Check that the order of the time and group levels are correct.
+# Time level:   1 2 3 4 
+# Group level:   D0 D2 D1 
+# If the order is not correct, specify the correct order in time.order or group.order.
 
 ## Wald-type statistic 
 ex.f1f1$Wald.test

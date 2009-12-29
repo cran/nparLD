@@ -36,6 +36,10 @@ w.g<-c(1:2)
 w.pat<-rbind(c(1:5), c(1:5))
 ex.f1f1.2<-f1.ld.f1(var,time,group,subject,w.pat,w.t,w.g,
 time.name="Week",group.name="Agoraphobia",description=FALSE)
+# Check that the order of the time and group levels are correct.
+# Time level:   0 2 4 6 8 
+# Group level:   w wo 
+# If the order is not correct, specify the correct order in time.order or group.order.
 
 ## Wald-type statistic
 ex.f1f1.2$Wald.test

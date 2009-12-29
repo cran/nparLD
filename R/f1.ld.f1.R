@@ -9,13 +9,17 @@
 # Optional Input:	
 #		w.pat: pattern matrix of order group level x time level
 #		w.t : vector of order time level, pattern for interaction 
-#		w.g : vector of order group level, group pattern  	
+#		w.g : vector of order group level, group pattern
+#		time.name: name of the time vector. "Time" is set as default.
+#		group.name: name of the time vector. "Group" is set as default.  	
 #               description: description of the output. Default is set to TRUE (show description)
+#		time.order: a vector of time levels specifying the order.
+#		group.order: a vector of group levels specifying the order.
 #
 # Output:
 #               list of relative treatment effects, test results, pattern result
 #
-f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, time.name="Time", group.name="Group", description=TRUE)
+f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, time.name="Time", group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -28,6 +32,10 @@ f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
 #        Editied by: Kimihiro Noguchi
 #         Version:  01-02
 #         Date: August 18, 2009
+#
+#        Editied by: Kimihiro Noguchi
+#         Version:  01-03
+#         Date: December 24, 2009
 #
 #    Key Variables:
 #                time: time factor
@@ -96,8 +104,8 @@ f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
 		
 		# output
 		out <- data.frame(RankMeans=RankMean, Nobs=Nobs, RTE=RTE);
-        	levels(group) <- paste(group.name,levels(group),sep="")
-       		levels(time) <- paste(time.name,levels(time),sep="")
+        	levels(group) <- paste(group.name,glevel,sep="")
+       		levels(time) <- paste(time.name,tlevel,sep="")
 		row.names(out)<-c(levels(group), levels(time), levels(group:time));
 		return(out);
 	}
@@ -624,21 +632,95 @@ f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
 
 # main function
 
-	library(MASS);
+	library(MASS)
+	glevel <- unique(group)
+	tlevel <- unique(time)
+	slevel <- unique(subject)
+	t <- length(tlevel)
+	s <- length(slevel)
+	a <- length(glevel)
+
+	if((t*s)!=length(var))
+	stop("Number of levels of subject (",s, ") times number of levels of time (",t,") 
+	is not equal to the total number of observations (",length(var),").",sep="")
+
+#    time order vector
+
+	if(!is.null(time.order))
+	{
+		tlevel <- time.order
+		tlevel2 <- unique(time)
+
+		if(length(tlevel)!=length(tlevel2))	# if the levels of the order is different from the one in the data
+		stop("Length of the time.order vector (",length(tlevel), ") 
+		is not equal to the levels of time vector (",length(tlevel2),").",sep="")
+
+		if(mean(sort(tlevel)==sort(tlevel2))!=1)     # if the elements in the time.order is different from the time levels
+		stop("Elements in the time.order vector is different from the levels specified in the time vector.",sep="")		
+	}
+
+#    group order vector
+
+	 if(!is.null(group.order))
+	 {
+		glevel <- group.order
+		glevel2 <- unique(group)
+
+		if(length(glevel)!=length(glevel2))	# if the levels of the order is different from the one in the data
+		stop("Length of the group.order vector (",length(glevel), ") 
+		is not equal to the levels of group vector (",length(glevel2),").",sep="")
+
+		if(mean(sort(glevel)==sort(glevel2))!=1)     # if the elements in the group.order is different from the group levels
+		stop("Elements in the group.order vector is different from the levels specified in the group vector.",sep="")		
+	 }
+
+#    sort data
+
+	sortvector<-double(length(var))
+	newtime<-double(length(var))
+	newsubject<-double(length(var))
+	newgroup<-double(length(var))
+
+	for(i in 1:length(var))
+        {
+           	row<-which(subject[i]==slevel)
+	  	col<-which(time[i]==tlevel)
+		newsubject[i]<-row
+		newtime[i]<-col
+		newgroup[i]<-which(group[i]==glevel)
+		sortvector[((col-1)*s+row)]<-i
+        }   
+	
+	subject<-newsubject[sortvector]
+	var<-var[sortvector]
+	time<-newtime[sortvector]
+	group<-newgroup[sortvector]
+
+#    sort again by group, and assign new subject numbers to subjects
+
+	grouptemp<-order(group[1:s])
+	groupplus<-(rep(c(0:(t-1)),e=s))*s
+	groupsort<-(rep(grouptemp,t))+groupplus
+	
+	subject<-rep(c(1:s),t)
+	var<-var[groupsort]
+	time<-time[groupsort]
+	group<-group[groupsort]
+
+#    organize data
+
+	group<-factor(group)
+	time<-factor(time)
+	subject<-factor(subject)
+
         score <- var
-	N.na <- sum(is.na(score));
-	ind <- 1 - is.na(score);
-	N <- sum(ind);
-	rscore <- rank(score)*ind;
+	N.na <- sum(is.na(score))
+	ind <- 1 - is.na(score)
+	N <- sum(ind)
+	rscore <- rank(score)*ind
 
-	group <- as.factor(group)
-	subject <- as.factor(subject)
-
-	time <- as.factor(time)
 	data <- cbind(group, time, subject, rscore, ind) # changed on 16 August, 2004
-	t <- nlevels(time);
-	a <- nlevels(group);
-	ni <- count.subj(group, subject);
+	ni <- count.subj(group, subject)
 	n <- sum(ni); # number of subjects in the experiment
 
         if(description==TRUE)
@@ -697,6 +779,10 @@ f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
            	cat(" covariance = Covariance matrix","\n")
            	cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       }
+           	cat(" Check that the order of the time and group levels are correct.\n") 
+           	cat(" Time level:  " , paste(tlevel),"\n")
+           	cat(" Group level:  " , paste(glevel),"\n")
+           	cat(" If the order is not correct, specify the correct order in time.order or group.order.\n\n")
 
 
 	# unconditional group and time means
@@ -732,8 +818,8 @@ f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
 	   wald.test.t <- wald.test(group, time, subject, rscore, ind, ni);
 	   anova.test.t <- anova.test(group, time, subject, rscore, ind, a, ni);
 	   out2 <- c(out2, wald.test.t, anova.test.t)
-	   simple.time.test.t <- simple.time.test(levels(group), a, t, ni, N, w.pat, V2, R);
-           pair.comp.t <- pair.comp.test(data, ni, w.t,levels(group))
+	   simple.time.test.t <- simple.time.test(glevel, a, t, ni, N, w.pat, V2, R);
+           pair.comp.t <- pair.comp.test(data, ni, w.t, glevel)
            out2 <- c(out2, simple.time.test.t,pair.comp.t)
 
         if(!is.null(w.g)) pattern.g <- pattern.group(group, time, subject, rscore, ind, a, t, ni, g.mean, w.g)

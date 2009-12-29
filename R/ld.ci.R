@@ -9,10 +9,12 @@
 #               group.name: name of group vector
 #               time.name: name of time vector
 #               description: description of the output. Default is set to TRUE (show description)
+#		time.order: a vector of time levels specifying the order.
+#		group.order: a vector of group levels specifying the order.
 #   Output:
 #             confidence interval and bias estimation in a matrix form
 #  
-ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", group.name="Group", description=TRUE)
+ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -26,6 +28,10 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
 #        Editied by: Kimihiro Noguchi
 #         Version:  01-02
 #         Date: August 27, 2009
+#
+#        Editied by: Kimihiro Noguchi
+#         Version:  01-03
+#         Date: December 24, 2009
 #
 #    Key Variables:
 #                timenames: names (or numbers) of the time
@@ -72,6 +78,82 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
 
 	### initialize variables
 
+	glevel <- unique(group)
+	tlevel <- unique(time)
+	slevel <- unique(subject)
+	t <- length(tlevel)
+	s <- length(slevel)
+	a <- length(glevel)
+
+	if((t*s)!=length(var))
+	stop("Number of levels of subject (",s, ") times number of levels of time (",t,") 
+	is not equal to the total number of observations (",length(var),").",sep="")
+
+	#    time order vector
+
+	if(!is.null(time.order))
+	{
+		tlevel <- time.order
+		tlevel2 <- unique(time)
+
+		if(length(tlevel)!=length(tlevel2))	# if the levels of the order is different from the one in the data
+		stop("Length of the time.order vector (",length(tlevel), ") 
+		is not equal to the levels of time vector (",length(tlevel2),").",sep="")
+
+		if(mean(sort(tlevel)==sort(tlevel2))!=1)     # if the elements in the time.order is different from the time levels
+		stop("Elements in the time.order vector is different from the levels specified in the time vector.",sep="")		
+	}
+
+	#    group order vector
+
+	 if(!is.null(group.order))
+	 {
+		glevel <- group.order
+		glevel2 <- unique(group)
+
+		if(length(glevel)!=length(glevel2))	# if the levels of the order is different from the one in the data
+		stop("Length of the group.order vector (",length(glevel), ") 
+		is not equal to the levels of group vector (",length(glevel2),").",sep="")
+
+		if(mean(sort(glevel)==sort(glevel2))!=1)     # if the elements in the group.order is different from the group levels
+		stop("Elements in the group.order vector is different from the levels specified in the group vector.",sep="")		
+	 }
+
+	#    sort data
+
+	sortvector<-double(length(var))
+	newtime<-double(length(var))
+	newsubject<-double(length(var))
+	newgroup<-double(length(var))
+
+	for(i in 1:length(var))
+        {
+           row<-which(subject[i]==slevel)
+	   col<-which(time[i]==tlevel)
+	   newsubject[i]<-row
+	   newtime[i]<-col
+	   newgroup[i]<-which(group[i]==glevel)
+	   sortvector[((col-1)*s+row)]<-i
+        }   
+	
+	subject<-newsubject[sortvector]
+	var<-var[sortvector]
+	time<-newtime[sortvector]
+	group<-newgroup[sortvector]
+
+	#    sort again by group, and assign new subject numbers to subjects
+
+	grouptemp<-order(group[1:s])
+	groupplus<-(rep(c(0:(t-1)),e=s))*s
+	groupsort<-(rep(grouptemp,t))+groupplus
+	
+	subject<-rep(c(1:s),t)
+	var<-var[groupsort]
+	time<-time[groupsort]
+	group<-group[groupsort]
+
+	#    organize data
+
 	timenames<-unique(time)
 	time<-factor(time)
 	subject<-factor(subject)
@@ -115,6 +197,7 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
  		{
   			tempFC<-group[which(time==sort1[i])]
   			FAC<-tempFC[orderSJ]
+			FAC<-factor(FAC)
  		}
 
  		Omat[,i]<-tempD
@@ -152,8 +235,8 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
 		R1a.list[[i]], 2, sum) 
 
 	RTE <- (RMeans - 0.5) / NN 
-	GROUP <-  rep(facs, e=T)
-	TIME <-  rep(timenames,A)
+	GROUP <-  rep(glevel, e=T)
+	TIME <-  rep(tlevel,A)
 	Nobs <-  rep(0, A*T)
 
 	for(i in 1:A) 
@@ -350,6 +433,10 @@ ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", gr
            	cat("\n Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.")
 		cat("\n\n")
 	}
+           	cat(" Order of the time and group levels.\n") 
+           	cat(" Time level:  " , paste(tlevel),"\n")
+           	cat(" Group level:  " , paste(glevel),"\n")
+           	cat(" The order may be specified in time.order or group.order (does not affect the calculation).\n\n")
 
 	return(list(summary=rd.PRes1))
 }

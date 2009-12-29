@@ -27,7 +27,10 @@ var<-c(panic[,"W0"],panic[,"W2"],panic[,"W4"],panic[,"W6"],panic[,"W8"])
 time<-c(rep(0,16),rep(2,16),rep(4,16),rep(6,16),rep(8,16))
 subject<-rep(panic[,"Patient"],5)
 pat<-c(5,4,3,2,5)
-ex.f1<-ld.f1(var,time,subject,w.pat=pat,time.name="week",description=FALSE)
+ex.f1<-ld.f1(var,time,subject,w.pat=pat,time.name="Week",description=FALSE)
+# Check that the order of the time level is correct.
+# Time level:   0 2 4 6 8 
+# If the order is not correct, specify the correct order in time.order.
 
 ## Wald-type statistic 
 ex.f1$Wald.test

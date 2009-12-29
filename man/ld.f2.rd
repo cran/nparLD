@@ -6,18 +6,20 @@ This function performs several tests for the relative treatment effects for the 
 }
 
 \usage{
-ld.f2(var, time1, time2, subject, time1.name="TimeC", 
-time2.name="TimeT", description=TRUE)
+ld.f2(var, time1, time2, subject, time1.name="TimeC", time2.name="TimeT", 
+description=TRUE, time1.order=NULL, time2.order=NULL) 
 }
 
 \arguments{
-  \item{var}{a vector of variable of interest; missing values should be specified as NA.}
+  \item{var}{a vector of numeric variable of interest; missing values should be specified as NA.}
   \item{time1}{a vector of the first sub-plot factor variable. See Details for more explanation.}
   \item{time2}{a vector of the second sub-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects.}
   \item{time1.name}{name of the time1 vector; the default option is "TimeC".}
   \item{time2.name}{name of the time2 vector; the default option is "TimeT".}
   \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time1.order}{a character or numeric vector specifying the order of the time1 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{time2.order}{a character or numeric vector specifying the order of the time2 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
 }
 
 \details{
@@ -35,7 +37,7 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
 }
 
 \note{
-Version 1.0 of the ld.f2 function had problems with calculations of the statistics, and the issues have been resolved in Version 1.1. We thank Dr. Stefano Burigat for pointing out the problems. Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
+Version 1.0 of the ld.f2 function had problems with calculations of the statistics, and the issues have been resolved in Version 1.1. We would like to thank Dr. Stefano Burigat for pointing out the problems.
 }
 
 \references{
@@ -56,12 +58,17 @@ R. Oldenbourg Verlag, Munchen Wien.
 data(amylase)
 var<-c(amylase[,"m8"],amylase[,"m12"],amylase[,"m17"],amylase[,"m21"],
 amylase[,"t8"],amylase[,"t12"],amylase[,"t17"],amylase[,"t21"])
-time1<-factor(c(rep("M",56),rep("T",56)))
+time1<-c(rep("M",56),rep("T",56))
 time2<-c(rep(8,14),rep(12,14),rep(17,14),rep(21,14),
 rep(8,14),rep(12,14),rep(17,14),rep(21,14))
 subject<-c(rep(amylase[,"Proband"],8))
 ex.f2<-ld.f2(var=var,time1=time1,time2=time2,subject=subject,
-time1.name="Day",time2.name="Time",description=FALSE)
+time1.name="Day",time2.name="Time",description=FALSE, 
+time1.order=c("M","T"),time2.order=c(8,12,17,21))
+# Check that the order of the time1 and time2 levels are correct.
+# Time1 level:   M T 
+# Time2 level:   8 12 17 21 
+# If the order is not correct, specify the correct order in time1.order and time2.order.
 
 ## Wald-type statistic 
 ex.f2$Wald.test

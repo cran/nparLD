@@ -7,11 +7,12 @@ This function performs several tests for the relative treatment effects with glo
 
 \usage{
 f2.ld.f1(var, time, group1, group2, subject, time.name="Time", 
-group1.name="GroupA", group2.name="GroupB", description=TRUE)
+group1.name="GroupA", group2.name="GroupB", description=TRUE, 
+time.order=NULL, group1.order=NULL, group2.order=NULL)
 }
 
 \arguments{
-  \item{var}{a vector of variable of interest; missing values should be specified as NA.}
+  \item{var}{a vector of numeric variable of interest; missing values should be specified as NA.}
   \item{time}{a vector of the sub-plot factor variable. See Details for more explanation.}
   \item{group1}{a vector of the first whole-plot factor variable. See Details for more explanation.}
   \item{group2}{a vector of the second whole-plot factor variable. See Details for more explanation.}
@@ -20,6 +21,9 @@ group1.name="GroupA", group2.name="GroupB", description=TRUE)
   \item{group1.name}{name of the group1 vector; the default option is "GroupA".}
   \item{group2.name}{name of the group2 vector; the default option is "GroupB".}
   \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time.order}{a character or numeric vector specifying the order of the time levels; the default option is NULL.}
+  \item{group1.order}{a character or numeric vector specifying the order of the time2 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{group2.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
 }
 
 \details{
@@ -35,10 +39,6 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
   \item{ANOVA.test}{the test statistic, degrees of freedom (df), and corresponding p-value of the ANOVA-type test.}
   \item{ANOVA.test.mod.Box}{the test statistic, degrees of freedom (df1, df2), and corresponding p-value of the ANOVA-type test for the whole-plot factors and their interaction.}
   \item{covariance}{the covariance matrix.}
-}
-
-\note{
-Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
 }
 
 \references{
@@ -66,7 +66,16 @@ group1<-rep(shoulder[,"Treat"],6)
 group2<-rep(shoulder[,"Gender"],6)
 subject<-rep(shoulder[,"Patient"],6)
 ex.f2f1<-f2.ld.f1(var, time, group1, group2, subject, time.name = "Time", 
-group1.name = "Treatment", group2.name = "Gender", description=FALSE)
+group1.name = "Treatment", group2.name = "Gender", description=FALSE, 
+time.order=c(1,2,3,4,5,6), group1.order=c("Y","N"), group2.order=c("F","M"))
+# Check that the order of the time, group1, and group2 levels are correct.
+# Time level:   1 2 3 4 5 6 
+# Group1 level:   Y N 
+# Group2 level:   F M 
+# If the order is not correct, specify the correct order in time.order, group1.order, or group2.order.
+#
+# Warning(s):
+# The covariance matrix is singular. 
 
 ## Wald-type statistic 
 ex.f2f1$Wald.test

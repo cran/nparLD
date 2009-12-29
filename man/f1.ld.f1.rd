@@ -6,12 +6,12 @@ This function performs several tests for the relative treatment effects with glo
 }
 
 \usage{
-f1.ld.f1(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
-time.name="Time", group.name="Group", description=TRUE)
+f1.ld.f1(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, time.name="Time", 
+group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
 }
 
 \arguments{
-  \item{var}{a vector of variable of interest; missing values should be specified as NA.}
+  \item{var}{a vector of numeric variable of interest; missing values should be specified as NA.}
   \item{time}{a vector of the sub-plot factor variable. See Details for more explanation.}
   \item{group}{a vector of the whole-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects.}
@@ -21,6 +21,8 @@ time.name="Time", group.name="Group", description=TRUE)
   \item{time.name}{name of the time vector; the default option is "Time".}
   \item{group.name}{name of the group vector; the default option is "Group".}
   \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time.order}{a character or numeric vector specifying the order of the time levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{group.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
 }
 
 \details{
@@ -43,10 +45,6 @@ Summary of the relative treatment effect (RTE) in a n-by-3 matrix form, where n 
   \item{pattern.pair.comparison}{the test statistic, corresponding p-value (approximated by standard normal distribution), degrees of freedom (df) for Student's t distribution, and corresponding p-value (approximated by Student's t distribution with the degrees of freedom in the previous column) to test for patterned interactions.}
   \item{pattern.group}{the test statistic, corresponding p-value (approximated by standard normal distribution), degrees of freedom (df) for Student's t distribution, and corresponding p-value (approximated by Student's t distribution with the degrees of freedom in the previous column) to test for patterned group effects.}
   \item{covariance}{the covariance matrix.}
-}
-
-\note{
-Although the function is designed to work for any kind of input (either in charactor or numeric vector) for the factor parameter(s), we recommend inputting them as numeric vector(s) after assigning each group of factors a number (i.e., 1 = first group, 2 = second group, etc.). 
 }
 
 \references{
@@ -76,7 +74,12 @@ w.t<-c(1:4)
 w.g<-c(1:3)
 w.pat <- rbind(c(1:4), c(1:4), c(1:4))
 ex.f1f1<-f1.ld.f1(var,time,group,subject,w.pat,w.t,w.g,
-time.name="Year",group.name="Area",description=FALSE)
+time.name="Year",group.name="Area",description=FALSE,
+time.order=c(1,2,3,4),group.order=c("D0","D1","D2"))
+# Check that the order of the time and group levels are correct.
+# Time level:   1 2 3 4 
+# Group level:   D0 D1 D2 
+# If the order is not correct, specify the correct order in time.order or group.order.
 
 ## Wald-type statistic 
 ex.f1f1$Wald.test

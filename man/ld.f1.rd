@@ -6,7 +6,8 @@ This function performs several tests for the relative treatment effects with glo
 }
 
 \usage{
-ld.f1(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.order=NULL)
+ld.f1(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, 
+time.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 }
 
 \arguments{
@@ -14,9 +15,11 @@ ld.f1(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.o
   \item{time}{a vector of the sub-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects}
   \item{w.pat}{a vector of pattern for the pattern alternatives; the default option is NULL. The length, if specified, must be equal to the number of time levels.}
-  \item{time.name}{name of the time vector; the default option is "Time".} 
-  \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time.name}{a character vector specifying the name of the time vector; the default option is "Time".} 
+  \item{description}{an indicator for whether a short description of the output should be shown; the default option is TRUE.}
   \item{time.order}{a character or numeric vector specifying the order of the time levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{plot.RTE}{an indicator for whether a plot of the relative treatment effect (RTE) should be shown; the default option is TRUE.}
+  \item{show.covariance}{an indicator for whether the covariance matrix should be shown; the default option is FALSE, in which case, NULL is returned.}
 }
 
 \details{
@@ -63,7 +66,8 @@ var<-c(panic[,"W0"],panic[,"W2"],panic[,"W4"],panic[,"W6"],panic[,"W8"])
 time<-c(rep(0,16),rep(2,16),rep(4,16),rep(6,16),rep(8,16))
 subject<-rep(panic[,"Patient"],5)
 pat<-c(5,4,3,2,5)
-ex.f1<-ld.f1(var,time,subject,w.pat=pat,time.name="Week",description=FALSE, time.order=c(0,2,4,6,8))
+ex.f1<-ld.f1(var,time,subject,w.pat=pat,time.name="Week",description=FALSE, 
+time.order=c(0,2,4,6,8))
 # Check that the order of the time level is correct.
 # Time level:   0 2 4 6 8 
 # If the order is not correct, specify the correct order in time.order.

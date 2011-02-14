@@ -5,15 +5,17 @@
 #               time1: a vector of the first time variable
 #               time2: a vector of the second time variable
 #               subject: a vector of independent subjects
-#               time1.name: time1 factor name. Default is set to Time_C
-#               time2.name: time2 factor names. Default is set to Time_T
+#               time1.name: time1 factor name. Default is set to Treatment
+#               time2.name: time2 factor names. Default is set to Time
 #               description: description of the output. Default is set to TRUE (show description)
 #		time1.order: a vector of time1 levels specifying the order.
 #		time2.order: a vector of time2 levels specifying the order.
+#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
+#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-ld.f2 <- function(var, time1, time2, subject, time1.name="TimeC", time2.name="TimeT", description=TRUE, time1.order=NULL, time2.order=NULL) 
+ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name="Time", description=TRUE, time1.order=NULL, time2.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -166,6 +168,7 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="TimeC", time2.name="Ti
 	
         Lamda <- 1-as.numeric(is.na(var))
         RMeans<-tapply(RD*Lamda,uvector,sum)/tapply(Lamda,uvector,sum)
+				rmeansout <- RMeans
         Nobs<-tapply(Lamda,uvector,sum)
 
         origRmat<-matrix(nrow=N, ncol=CTcount) 
@@ -407,6 +410,39 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="TimeC", time2.name="Ti
    
 	}
 
-            out.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType, covariance=V) 
-            return(out.ld.f2)
+	if (plot.RTE==TRUE)
+	{
+		plot.rte <- rd.PRes1[,3][1:(C*T)]
+		id.time1<-sort(c(rep(1:C,T)))
+		id.time2<-c(rep(1:T,C))
+		id.time3<-seq(1,C*T,C)
+
+		frank.time1 <- time1.vec[id.time1]
+		frank.time2 <- time2.vec[id.time2]
+
+
+		Frank<-data.frame(Time1 = frank.time1, Time2 = frank.time2, RTE =plot.rte)
+		plot.samples <- split(Frank, Frank$Time1)
+
+		id.g<-which(names(plot.samples)==time1.vec[1])
+		ptg<-expression(p[is])
+		plot(1:T,plot.samples[[id.g]]$RTE,pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab=time2.name,ylab=ptg,cex.lab=1.5,xlim=c(0,T+1),lwd=3)
+		for (kn in 2:C)
+		{
+			id.gg<-which(names(plot.samples)==time1.vec[kn])
+			points(1:T,plot.samples[[id.gg]]$RTE,pch=10, type="b",lwd=3,ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,col=kn)
+		}
+		axis(1,at=1:T,labels=Frank$Time2[1:T])
+		namen.g.plot1<-seq(1, C*T, by = T)
+		namen.g.plot2<-paste(Frank$Time1[namen.g.plot1])
+		legend("top", col=c(1:C),namen.g.plot2,pch=c(rep(10,C)),lwd=c(rep(3,C)) )
+		title(main=paste("Relative Effects"))
+	}
+	
+	if(show.covariance==FALSE)
+	{
+  		V<-NULL
+	}
+        out.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType, covariance=V) 
+        return(out.ld.f2)
 }

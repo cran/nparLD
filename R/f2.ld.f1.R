@@ -13,12 +13,14 @@
 #		time.order: a vector of time levels specifying the order.
 #		group1.order: a vector of group1 levels specifying the order.
 #		group2.order: a vector of group2 levels specifying the order.
+#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
+#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
 f2.ld.f1 <- function(var, time, group1, group2, subject, time.name="Time", 
 group1.name="GroupA", group2.name="GroupB", description=TRUE, 
-time.order=NULL, group1.order=NULL, group2.order=NULL) 
+time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -712,6 +714,59 @@ time.order=NULL, group1.order=NULL, group2.order=NULL)
 		cat("\n Warning(s):\n")
 		if(WARN.1) cat(" There are less subjects than sub-plot factor levels.\n")
 		if(SING.COV) cat(" The covariance matrix is singular. \n\n")
+	}
+
+
+	if (plot.RTE==TRUE)
+	{
+		id.rte<-A+T+B+A*T+B*T+A*B
+		plot.rte <- rd.PRes1[,3][(id.rte+1):(id.rte+A*B*T)]
+		
+		
+		frank.group1 <- rep(0,0)
+		frank.group2<-rep(0,0)
+		frank.time<-rep(0,0)
+		
+		
+		for(i in 1:A)
+		{
+			for(j in 1:B) 
+			{
+				for(k in 1:T) 
+				{
+					frank.group1 <- c(frank.group1, paste(origg1level[i]))
+					frank.group2 <-c(frank.group2, paste(origg2level[j]))
+					frank.time <- c(frank.time, paste(origtlevel[k]))
+				} 
+			} 
+		}
+		
+		Frank<-data.frame(Group1 =frank.group1, Time = frank.time, Group2 = frank.group2, RTE =plot.rte)
+		plot.samples <- split(Frank, Frank$Group1)
+
+		lev.G1 <- levels(factor(plot.samples[[1]]$Group1))
+		lev.G2 <- levels(factor(plot.samples[[1]]$Group2))
+		lev.T <- levels(factor(Frank$Time))
+		
+		par(mfrow=c(1,A))
+		for (hh in 1:A)
+		{
+			id.g<-which(names(plot.samples)==origg1level[hh])
+			plot(1:T, plot.samples[[id.g]]$RTE[1:T],pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,xlim=c(0,T+1),lwd=3)
+			title(main=paste(group1.name, origg1level[hh]), xlab=paste(time.name))
+			for (s in 1:B)
+			{
+				points(1:T,plot.samples[[id.g]]$RTE[plot.samples[[hh]]$Group2==lev.G2[s]],col=s,type="b",lwd=3 )
+			}
+			axis(1,at=1:T,labels=origtlevel)
+			legend("top", col=c(1:B),paste(group2.name,lev.G2),pch=c(rep(10,B)),lwd=c(rep(3,B)) )
+
+		}
+	}
+
+	if(show.covariance==FALSE)
+	{
+  		V<-NULL
 	}
 
         out.f2.ld.f1 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType, ANOVA.test=rd.BoxType, ANOVA.test.mod.Box=rd.BoxType2, covariance=V) 

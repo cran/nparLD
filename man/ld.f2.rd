@@ -6,8 +6,9 @@ This function performs several tests for the relative treatment effects for the 
 }
 
 \usage{
-ld.f2(var, time1, time2, subject, time1.name="TimeC", time2.name="TimeT", 
-description=TRUE, time1.order=NULL, time2.order=NULL) 
+ld.f2(var, time1, time2, subject, time1.name="Treatment", 
+time2.name="Time", description=TRUE, time1.order=NULL, 
+time2.order=NULL, plot.RTE=TRUE, show.covariance=FALSE) 
 }
 
 \arguments{
@@ -15,11 +16,13 @@ description=TRUE, time1.order=NULL, time2.order=NULL)
   \item{time1}{a vector of the first sub-plot factor variable. See Details for more explanation.}
   \item{time2}{a vector of the second sub-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects.}
-  \item{time1.name}{name of the time1 vector; the default option is "TimeC".}
-  \item{time2.name}{name of the time2 vector; the default option is "TimeT".}
-  \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time1.name}{a character vector specifying the name of the time1 vector; the default option is "Treatment".}
+  \item{time2.name}{a character vector specifying the name of the time2 vector; the default option is "Time".}
+  \item{description}{an indicator for whether a short description of the output should be shown; the default option is TRUE.}
   \item{time1.order}{a character or numeric vector specifying the order of the time1 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{time2.order}{a character or numeric vector specifying the order of the time2 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{plot.RTE}{an indicator for whether a plot of the relative treatment effect (RTE) should be shown; the default option is TRUE.}
+  \item{show.covariance}{an indicator for whether the covariance matrix should be shown; the default option is FALSE, in which case, NULL is returned.}
 }
 
 \details{

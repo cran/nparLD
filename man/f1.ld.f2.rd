@@ -6,9 +6,10 @@ This function performs several tests for the relative treatment effects with glo
 }
 
 \usage{
-f1.ld.f2(var, time1, time2, group, subject, time1.name="TimeC", 
-time2.name="TimeT", group.name="GroupA", description=TRUE, 
-time1.order=NULL, time2.order=NULL, group.order=NULL)
+f1.ld.f2(var, time1, time2, group, subject, time1.name="Treatment", 
+time2.name="Time", group.name="Group", description=TRUE, 
+time1.order=NULL, time2.order=NULL, group.order=NULL,
+plot.RTE=TRUE, show.covariance=FALSE)
 }
 
 \arguments{
@@ -17,13 +18,15 @@ time1.order=NULL, time2.order=NULL, group.order=NULL)
   \item{time2}{a vector of the second sub-plot factor variable. See Details for more explanation.}
   \item{group}{a vector of the whole-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects.}
-  \item{time1.name}{name of the time1 vector; the default option is "TimeC".}
-  \item{time2.name}{name of the time2 vector; the default option is "TimeT".}
-  \item{group.name}{name of the group vector; the default option is "GroupA".}
-  \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time1.name}{a character vector specifying the name of the time1 vector; the default option is "Treatment".}
+  \item{time2.name}{a character vector specifying the name of the time2 vector; the default option is "Time".}
+  \item{group.name}{a character vector specifying the name of the group vector; the default option is "Group".}
+  \item{description}{an indicator for whether a short description of the output should be shown; the default option is TRUE.}
   \item{time1.order}{a character or numeric vector specifying the order of the time1 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{time2.order}{a character or numeric vector specifying the order of the time2 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{group.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{plot.RTE}{an indicator for whether a plot of the relative treatment effect (RTE) should be shown; the default option is TRUE.}
+  \item{show.covariance}{an indicator for whether the covariance matrix should be shown; the default option is FALSE, in which case, NULL is returned.}
 }
 
 \details{
@@ -72,7 +75,8 @@ group.order=c("Drug","Placebo"))
 # Time1 level:   Healthy Operated 
 # Time2 level:   -1 1 3 5 
 # Group level:   Drug Placebo 
-# If the order is not correct, specify the correct order in time1.order, time2.order, or group.order.
+# If the order is not correct, specify the correct order in time1.order, time2.order, 
+# or group.order.
 
 ## Wald-type statistic 
 ex.f1f2$Wald.test

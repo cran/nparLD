@@ -8,7 +8,8 @@ This function performs several tests for the relative treatment effects with glo
 \usage{
 f2.ld.f1(var, time, group1, group2, subject, time.name="Time", 
 group1.name="GroupA", group2.name="GroupB", description=TRUE, 
-time.order=NULL, group1.order=NULL, group2.order=NULL)
+time.order=NULL, group1.order=NULL, group2.order=NULL,
+plot.RTE=TRUE, show.covariance=FALSE)
 }
 
 \arguments{
@@ -17,13 +18,15 @@ time.order=NULL, group1.order=NULL, group2.order=NULL)
   \item{group1}{a vector of the first whole-plot factor variable. See Details for more explanation.}
   \item{group2}{a vector of the second whole-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects}
-  \item{time.name}{name of the time vector; the default option is "Time".}
-  \item{group1.name}{name of the group1 vector; the default option is "GroupA".}
-  \item{group2.name}{name of the group2 vector; the default option is "GroupB".}
-  \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time.name}{a character vector specifying the name of the time vector; the default option is "Time".}
+  \item{group1.name}{a character vector specifying the name of the group1 vector; the default option is "GroupA".}
+  \item{group2.name}{a character vector specifying  the name of the group2 vector; the default option is "GroupB".}
+  \item{description}{an indicator for whether a short description of the output should be shown; the default option is TRUE.}
   \item{time.order}{a character or numeric vector specifying the order of the time levels; the default option is NULL.}
   \item{group1.order}{a character or numeric vector specifying the order of the time2 levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{group2.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{plot.RTE}{an indicator for whether a plot of the relative treatment effect (RTE) should be shown; the default option is TRUE.}
+  \item{show.covariance}{an indicator for whether the covariance matrix should be shown; the default option is FALSE, in which case, NULL is returned.}
 }
 
 \details{
@@ -72,7 +75,8 @@ time.order=c(1,2,3,4,5,6), group1.order=c("Y","N"), group2.order=c("F","M"))
 # Time level:   1 2 3 4 5 6 
 # Group1 level:   Y N 
 # Group2 level:   F M 
-# If the order is not correct, specify the correct order in time.order, group1.order, or group2.order.
+# If the order is not correct, specify the correct order in time.order, group1.order, 
+# or group2.order.
 #
 # Warning(s):
 # The covariance matrix is singular. 

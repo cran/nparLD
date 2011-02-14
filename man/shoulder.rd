@@ -38,7 +38,8 @@ group1.name = "Treatment", group2.name = "Gender", description=FALSE)
 # Time level:   1 2 3 4 5 6 
 # Group1 level:   Y N 
 # Group2 level:   F M 
-# If the order is not correct, specify the correct order in time.order, group1.order, or group2.order.
+# If the order is not correct, specify the correct order in time.order, group1.order, 
+# or group2.order.
 #
 # Warning(s):
 # The covariance matrix is singular. 

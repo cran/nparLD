@@ -7,7 +7,8 @@ This function performs calculations of the two-sided confidence intervals for th
 
 \usage{
 ld.ci(var, time, subject, group=NULL, alpha=0.05, time.name="Time", 
-group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
+group.name="Group", description=TRUE, time.order=NULL, group.order=NULL,
+rounds=4, plot.CI = TRUE)
 }
 
 \arguments{
@@ -15,12 +16,14 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
   \item{time}{a vector of the sub-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects.}
   \item{group}{a vector of the whole-plot factor variable; the default option is NULL. See Details for more explanation.}
-  \item{alpha}{the significance level of the confidence intervals; the default option is 0.05.}
+  \item{alpha}{a numeric specifying the significance level of the confidence intervals; the default option is 0.05.}
   \item{time.name}{a vector of the sub-plot factor variable.}
   \item{group.name}{a vector of the whole-plot factor variable.}
-  \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{description}{an indicator for whether a short description of the output should be shown; the default option is TRUE.}
   \item{time.order}{a character or numeric vector specifying the order of the time levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{group.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{rounds}{a numeric specifying the number of digits to be displayed.}
+  \item{plot.CI}{an indicator for whether a plot of the confidence interval (CI) should be shown; the default option is TRUE.}
 }
 
 \details{
@@ -60,35 +63,35 @@ group.order=c("YF","YM","NF","NM"))
 # Order of the time and group levels.
 # Time level:   1 2 3 4 5 6 
 # Group level:   YF YM NF NM 
-# The order may be specified in time.order or group.order (does not affect the calculation).
+# The order may be specified in time.order or group.order.
 
 ## Summary of the output
 ex.ci$summary
 
-#        Time RankMeans Nobs       RTE          Bias   Variance Lower_bound Upper_bound
-#GroupYF    1 123.96429   14 0.5018873  7.817386e-04 0.16799803   0.3791779   0.6243417
-#GroupYF    2 100.28571   14 0.4056330  2.680247e-04 0.13660452   0.2999756   0.5221784
-#GroupYF    3  89.25000   14 0.3607724 -4.802108e-04 0.09794961   0.2722481   0.4615337
-#GroupYF    4 101.46429   14 0.4104239  1.116769e-05 0.11363906   0.3131013   0.5163647
-#GroupYF    5  72.10714   14 0.2910859 -3.797016e-04 0.03888186   0.2351477   0.3554409
-#GroupYF    6  84.32143   14 0.3407375 -2.010185e-04 0.08075188   0.2605495   0.4328717
-#GroupYM    1 107.43750    8 0.4347053 -1.814750e-04 0.30930582   0.2786473   0.6059541
-#GroupYM    2 113.43750    8 0.4590955  2.177700e-04 0.26074354   0.3119987   0.6142276
-#GroupYM    3  87.37500    8 0.3531504  7.259001e-05 0.14644006   0.2471050   0.4774140
-#GroupYM    4  76.68750    8 0.3097053  1.814750e-04 0.08732668   0.2277189   0.4070482
-#GroupYM    5  92.06250    8 0.3722053 -1.451800e-04 0.20108702   0.2487034   0.5166544
-#GroupYM    6  92.06250    8 0.3722053 -1.451800e-04 0.20108702   0.2487034   0.5166544
-#GroupNF    1 154.36364   11 0.6254619  4.065041e-04 0.29536472   0.4499740   0.7708157
-#GroupNF    2 174.36364   11 0.7067627  7.021434e-04 0.18898677   0.5573273   0.8188401
-#GroupNF    3 162.45455   11 0.6583518 -1.108647e-04 0.19414002   0.5130420   0.7768149
-#GroupNF    4 182.22727   11 0.7387288  6.836659e-04 0.17037687   0.5926421   0.8425176
-#GroupNF    5 146.81818   11 0.5947894  9.238729e-05 0.23830019   0.4408203   0.7306618
-#GroupNF    6 133.50000   11 0.5406504 -1.773836e-03 0.15310016   0.4208431   0.6555177
-#GroupNM    1 126.75000    8 0.5132114 -5.444251e-04 0.33385938   0.3422031   0.6809777
-#GroupNM    2 168.62500    8 0.6834350  4.718351e-04 0.28550592   0.5020507   0.8195959
-#GroupNM    3 176.50000    8 0.7154472  1.560685e-03 0.33999653   0.5090255   0.8554739
-#GroupNM    4 172.56250    8 0.6994411  1.306620e-03 0.31023269   0.5066492   0.8375506
-#GroupNM    5 150.00000    8 0.6077236 -2.540650e-04 0.35845447   0.4175473   0.7683141
-#GroupNM    6 122.81250    8 0.4972053 -2.540650e-03 0.24685893   0.3502014   0.6447272
+#     Group Time Nobs RankMeans    RTE    Bias Variance  Lower  Upper
+#1  GroupYF    1   14  123.9643 0.5019  0.0008   0.1680 0.3792 0.6243
+#2  GroupYF    2   14  100.2857 0.4056  0.0003   0.1366 0.3000 0.5222
+#3  GroupYF    3   14   89.2500 0.3608 -0.0005   0.0979 0.2722 0.4615
+#4  GroupYF    4   14  101.4643 0.4104  0.0000   0.1136 0.3131 0.5164
+#5  GroupYF    5   14   72.1071 0.2911 -0.0004   0.0389 0.2351 0.3554
+#6  GroupYF    6   14   84.3214 0.3407 -0.0002   0.0808 0.2605 0.4329
+#7  GroupYM    1    8  107.4375 0.4347 -0.0002   0.3093 0.2786 0.6060
+#8  GroupYM    2    8  113.4375 0.4591  0.0002   0.2607 0.3120 0.6142
+#9  GroupYM    3    8   87.3750 0.3532  0.0001   0.1464 0.2471 0.4774
+#10 GroupYM    4    8   76.6875 0.3097  0.0002   0.0873 0.2277 0.4070
+#11 GroupYM    5    8   92.0625 0.3722 -0.0001   0.2011 0.2487 0.5167
+#12 GroupYM    6    8   92.0625 0.3722 -0.0001   0.2011 0.2487 0.5167
+#13 GroupNF    1   11  154.3636 0.6255  0.0004   0.2954 0.4500 0.7708
+#14 GroupNF    2   11  174.3636 0.7068  0.0007   0.1890 0.5573 0.8188
+#15 GroupNF    3   11  162.4545 0.6584 -0.0001   0.1941 0.5130 0.7768
+#16 GroupNF    4   11  182.2273 0.7387  0.0007   0.1704 0.5926 0.8425
+#17 GroupNF    5   11  146.8182 0.5948  0.0001   0.2383 0.4408 0.7307
+#18 GroupNF    6   11  133.5000 0.5407 -0.0018   0.1531 0.4208 0.6555
+#19 GroupNM    1    8  126.7500 0.5132 -0.0005   0.3339 0.3422 0.6810
+#20 GroupNM    2    8  168.6250 0.6834  0.0005   0.2855 0.5021 0.8196
+#21 GroupNM    3    8  176.5000 0.7154  0.0016   0.3400 0.5090 0.8555
+#22 GroupNM    4    8  172.5625 0.6994  0.0013   0.3102 0.5066 0.8376
+#23 GroupNM    5    8  150.0000 0.6077 -0.0003   0.3585 0.4175 0.7683
+#24 GroupNM    6    8  122.8125 0.4972 -0.0025   0.2469 0.3502 0.6447
 }
 \keyword{htest}

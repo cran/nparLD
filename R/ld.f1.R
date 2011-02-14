@@ -9,10 +9,12 @@
 #		time.name: name of the time vector. "Time" is set as default.
 #               description: description of the output. Default is set to TRUE (show description)
 #		time.order: a vector of time levels specifying the order.
+#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
+#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, pattern results, covariance matrix
 #  
-ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.order=NULL)
+ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -336,11 +338,25 @@ covr <- function(mvar, mind, rmean, t){
 		cat("\n Warning(s):\n")
 		cat(" The covariance matrix is singular. \n")
 	    }
-
+		
+	    if(show.covariance==FALSE)
+	    {
+  		V<-NULL
+	    }
+		
             ## OUTPUT ##
             out.ld.f1 <- list(RTE=out,Wald.test=wald.test, Hotelling.test=hotelling.test, 
             ANOVA.test=anova.test, two.sample.test=two.sample.test, two.sample.BF.test=two.sample.bf.test, 
             pattern.test=pattern.test, covariance=V) 
-            return(out.ld.f1)
-}
 
+	   if (plot.RTE==TRUE)
+	   {
+		kk <- 1:t
+		ptg<-expression(p[i])
+		plot(kk, out[,3], pch=10, type="b",lwd=2,ylim=c(0,1),xaxt="n", xlab=time.name, ylab=ptg,cex.lab=1.5)
+		axis(1,at=kk, labels=SOURCE)
+		#text(1,1.1, ptg, font=3,cex=3)
+		title(main=paste("Relative Effects"))
+	   }
+           return(out.ld.f1)
+}

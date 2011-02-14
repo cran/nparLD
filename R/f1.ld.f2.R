@@ -6,19 +6,21 @@
 #               time1: a vector of the time1 variable
 #               time2: a vector of the time2 variable
 #               subject: a vector of independent subjects
-#               time1.name: time1 factor name. Default is set to TimeC
-#               time2.name: time2 factor name. Default is set to TimeT
-#               group.name: whole plot factor names. Default is set to GroupA
+#               time1.name: time1 factor name. Default is set to Treatment
+#               time2.name: time2 factor name. Default is set to Time
+#               group.name: whole plot factor names. Default is set to Group
 #               description: description of the output. Default is set to TRUE (show description)
 #		time1.order: a vector of time1 levels specifying the order.
 #		time2.order: a vector of time2 levels specifying the order.
 #		group.order: a vector of group levels specifying the order.
+#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
+#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-f1.ld.f2 <- function(var, time1, time2, group, subject, time1.name="TimeC", 
-time2.name="TimeT", group.name="GroupA", description=TRUE, time1.order=NULL, 
-time2.order=NULL, group.order=NULL) 
+f1.ld.f2 <- function(var, time1, time2, group, subject, time1.name="Treatment",
+time2.name="Time", group.name="Group", description=TRUE, time1.order=NULL,
+time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -612,6 +614,59 @@ time2.order=NULL, group.order=NULL)
 
 	if(!((C > 1) && (T > 1))) cat("Wald-type and Anova-type statistics cannot be computed, since either C or T is 1")
 
+	if(show.covariance==FALSE)
+	{
+  		V<-NULL
+	}
+
 	out.f1.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType, covariance=V) 
+
+	if (plot.RTE==TRUE)
+	{
+		id.rte<-A+T+C+A*T+C*T+A*C
+		plot.rte <- rd.PRes1[,3][(id.rte+1):(id.rte+A*C*T)]
+	
+		frank.group <- rep(0,0)
+		frank.time1<-rep(0,0)
+		frank.time2<-rep(0,0)
+	
+		
+		for(i in 1:A)
+		{
+			for(j in 1:C) 
+			{
+				for(k in 1:T) 
+				{
+					frank.group <- c(frank.group, paste(levs[i]))
+					frank.time1 <-c(frank.time1, paste(origsort1[j]))
+					frank.time2 <- c(frank.time2, paste(origsort2[k]))
+				}
+			}
+		}
+		
+		Frank<-data.frame(Group =frank.group, Time1 = frank.time1, Time2 = frank.time2, RTE =plot.rte)
+		plot.samples <- split(Frank, Frank$Group)
+
+		lev.T1 <- levels(factor(plot.samples[[1]]$Time1))
+		lev.T2 <- levels(factor(plot.samples[[1]]$Time2))
+		lev.F <- levels(factor(Frank$Group))
+
+		par(mfrow=c(1,A))
+		for (hh in 1:A)
+		{
+			id.g<-which(names(plot.samples)==origsortg[hh])
+			plot(1:T, plot.samples[[id.g]]$RTE[1:T],pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,xlim=c(0,T+1),lwd=3)
+			title(main=paste(group.name, origsortg[hh]), xlab=paste(time2.name))
+		
+			for (s in 1:C)
+			{
+				points(1:T,plot.samples[[id.g]]$RTE[plot.samples[[hh]]$Time1==lev.T1[s]],col=s,type="b",lwd=3 )
+			}
+		axis(1,at=1:T,labels=origsort2)
+		legend("top", col=c(1:C),paste(time1.name,lev.T1),pch=c(rep(10,C)),lwd=c(rep(3,C)) )
+
+		}
+	}
+
 	return(out.f1.ld.f2)
 }

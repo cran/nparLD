@@ -6,8 +6,9 @@ This function performs several tests for the relative treatment effects with glo
 }
 
 \usage{
-f1.ld.f1(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, time.name="Time", 
-group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
+f1.ld.f1(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, 
+time.name="Time", group.name="Group", description=TRUE, 
+time.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 }
 
 \arguments{
@@ -18,11 +19,13 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL)
   \item{w.pat}{an A-by-T matrix specifying the pattern for the pattern alternatives where A is the group level and T is the time level; the default option is NULL.}
   \item{w.t}{a vector of time pattern for the pattern alternatives; the default option is NULL. The length, if specified, must be equal to the number of time levels.}
   \item{w.g}{a vector of group pattern for the pattern alternatives; the default option is NULL. The length, if specified, must be equal to the number of group levels.}
-  \item{time.name}{name of the time vector; the default option is "Time".}
-  \item{group.name}{name of the group vector; the default option is "Group".}
-  \item{description}{indicator for whether a short description of the output should be shown; the default option is TRUE.}
+  \item{time.name}{a character vector specifying the name of the time vector; the default option is "Time".}
+  \item{group.name}{a character vector specifying the name of the group vector; the default option is "Group".}
+  \item{description}{an indicator for whether a short description of the output should be shown; the default option is TRUE.}
   \item{time.order}{a character or numeric vector specifying the order of the time levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{group.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
+  \item{plot.RTE}{an indicator for whether a plot of the relative treatment effect (RTE) should be shown; the default option is TRUE.}
+  \item{show.covariance}{an indicator for whether the covariance matrix should be shown; the default option is FALSE, in which case, NULL is returned.}
 }
 
 \details{

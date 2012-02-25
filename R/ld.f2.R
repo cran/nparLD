@@ -1,21 +1,20 @@
 # R program for LD_F2 macro
 #
 #   Input:   
-#               var: a vector of variable of interest
+#               y: a vector of variable of interest
 #               time1: a vector of the first time variable
 #               time2: a vector of the second time variable
 #               subject: a vector of independent subjects
-#               time1.name: time1 factor name. Default is set to Treatment
-#               time2.name: time2 factor names. Default is set to Time
+#               time1.name: time1 factor name. Default is set to Time_C
+#               time2.name: time2 factor names. Default is set to Time_T
 #               description: description of the output. Default is set to TRUE (show description)
 #		time1.order: a vector of time1 levels specifying the order.
 #		time2.order: a vector of time2 levels specifying the order.
-#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
-#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name="Time", description=TRUE, time1.order=NULL, time2.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
+ld.f2 <- function(y, time1, time2, subject, time1.name="Treatment", time2.name="Time", description=TRUE, 
+time1.order=NULL, time2.order=NULL,plot.RTE=TRUE,show.covariance=FALSE,order.warning=TRUE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -59,8 +58,9 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
 
 #    check whether the input variables are entered correctly
 
+	   var<-y
 	   if(is.null(var)||is.null(time1)||is.null(time2)||is.null(subject)) 
-		stop("At least one of the input parameters (var, time1, time2, or subject) is not found.")
+		stop("At least one of the input parameters (y, time1, time2, or subject) is not found.")
 	   
            sublen<-length(subject)
 	   varlen<-length(var)
@@ -68,7 +68,7 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
 	   tim2len<-length(time2)
 	   
 	   if((sublen!=varlen)||(sublen!=tim1len)||(sublen!=tim2len))
-		stop("At least one of the input parameters (var, time1, time2, or subject) has a different length.")
+		stop("At least one of the input parameters (y, time1, time2, or subject) has a different length.")
 
 	library(MASS)
 
@@ -205,13 +205,12 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
 	Ni <- apply(Lamdamat, 2, sum) 
 
 	DatRMeans <- RMeans 
+	   model.name<-"LD F2 Model"
 
      	if(description==TRUE)
      	{
-           cat(" LD F2 Model ") 
-           cat("\n ----------------------- ")
-	   cat("\n Total number of observations : ", NN)
-	   cat("\n Total Number of subjects ", N)
+	   cat(" Total number of observations : ", NN)
+	   cat("\n Total Number of subjects : ", N)
 	   cat("\n Total Number of missing observations : ", (N*CTcount - NN), "\n")
            cat("\n Class level information ")
            cat("\n ----------------------- ")
@@ -227,10 +226,16 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
            cat(" covariance = Covariance matrix","\n")
            cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       	}
+
+	if(order.warning==TRUE)
+	{
+           cat(" LD F2 Model ") 
+           cat("\n ----------------------- \n")
            cat(" Check that the order of the time1 and time2 levels are correct.\n") 
            cat(" Time1 level:  " , paste(origsort1),"\n")
            cat(" Time2 level:  " , paste(origsort2),"\n")
            cat(" If the order is not correct, specify the correct order in time1.order or time2.order.\n\n")
+	}
 
         Rmeanstime1<-tapply(RD*Lamda,time1,sum)/tapply(Lamda,time1,sum)
         Nobstime1<-tapply(Lamda,time1,sum)  
@@ -347,13 +352,13 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
 		dfWT <- qr(CT)$rank
 		dfWCT <- qr(CCT)$rank
 
-		if((!is.na(WC)) && WC > 0) pWC <- 1 - pchisq(WC, dfWC)
+		if((!is.na(WC)) && WC > 0) pWC <- pchisq(WC, dfWC, lower.tail=FALSE)
 		else pWC <- NA
 
-		if((!is.na(WT)) && WT > 0) pWT <- 1 - pchisq(WT, dfWT)
+		if((!is.na(WT)) && WT > 0) pWT <- pchisq(WT, dfWT, lower.tail=FALSE)
 		else pWT <- NA
 
-		if((!is.na(WCT)) && WCT > 0) pWCT <- 1 - pchisq(WCT, dfWCT)
+		if((!is.na(WCT)) && WCT > 0) pWCT <- pchisq(WCT, dfWCT, lower.tail=FALSE)
 		else pWCT <- NA
 
 		W <- rbind(WC,WT,WCT)
@@ -381,21 +386,21 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
 		BC <- (N/fn.tr(TVC)) * ((t(RTE)) %*% BtC %*% (RTE))
 		BCf <- ((fn.tr(BtC%*%V))^2)/(fn.tr(BtC%*%V%*%BtC%*%V))
 
-		if((!is.na(BC))&&(!is.na(BCf))&&(BC >= 0)&&(BCf > 0)) BCp <- 1 - pf(BC, BCf, 100000)
+		if((!is.na(BC))&&(!is.na(BCf))&&(BC >= 0)&&(BCf > 0)) BCp <- pf(BC, BCf, Inf, lower.tail=FALSE)
 		else BCp <- NA
 
 		TVT <- BtT%*%V
 		BT <- (N/fn.tr(TVT)) * ((t(RTE)) %*% BtT %*% (RTE))
 		BTf <- ((fn.tr(BtT%*%V))^2)/(fn.tr(BtT%*%V%*%BtT%*%V))
 
-		if((!is.na(BT))&&(!is.na(BTf))&&(BT >= 0)&&(BTf > 0)) BTp <- 1 - pf(BT, BTf, 100000)
+		if((!is.na(BT))&&(!is.na(BTf))&&(BT >= 0)&&(BTf > 0)) BTp <- pf(BT, BTf, Inf, lower.tail=FALSE)
 		else BTp <- NA
 
 		TVCT <- BtCT%*%V
 		BCT <- (N/fn.tr(TVCT)) * ((t(RTE)) %*% BtCT %*% (RTE))
 		BCTf <- ((fn.tr(BtCT%*%V))^2)/(fn.tr(BtCT%*%V%*%BtCT%*%V))
 
-		if((!is.na(BCT))&&(!is.na(BCTf))&&(BCT >= 0)&&(BCTf > 0)) BCTp <- 1 - pf(BCT, BCTf, 100000)
+		if((!is.na(BCT))&&(!is.na(BCTf))&&(BCT >= 0)&&(BCTf > 0)) BCTp <- pf(BCT, BCTf, Inf, lower.tail=FALSE)
 		else BCTp <- NA
 
 		B <- rbind(BC,BT,BCT)
@@ -410,39 +415,44 @@ ld.f2 <- function(var, time1, time2, subject, time1.name="Treatment", time2.name
    
 	}
 
-	if (plot.RTE==TRUE)
-	{
-		plot.rte <- rd.PRes1[,3][1:(C*T)]
-		id.time1<-sort(c(rep(1:C,T)))
-		id.time2<-c(rep(1:T,C))
-		id.time3<-seq(1,C*T,C)
+     if (plot.RTE == TRUE) {
+        plot.rte <- rd.PRes1[, 3][1:(C * T)]
+        id.time1 <- sort(c(rep(1:C, T)))
+        id.time2 <- c(rep(1:T, C))
+        id.time3 <- seq(1, C * T, C)
+        frank.time1 <- time1.vec[id.time1]
+        frank.time2 <- time2.vec[id.time2]
+        Frank <- data.frame(Time1 = frank.time1, Time2 = frank.time2, 
+            RTE = plot.rte)
+        plot.samples <- split(Frank, Frank$Time1)
+        id.g <- which(names(plot.samples) == time1.vec[1])
+        ptg <- expression(p[is])
+        plot(1:T, plot.samples[[id.g]]$RTE, pch = 10, type = "b", 
+            ylim = c(0, 1.1), xaxt = "n", xlab = time2.name, 
+            ylab = ptg, cex.lab = 1.5, xlim = c(0, T + 1), lwd = 3)
+        for (kn in 2:C) {
+            id.gg <- which(names(plot.samples) == time1.vec[kn])
+            points(1:T, plot.samples[[id.gg]]$RTE, pch = 10, 
+                type = "b", lwd = 3, ylim = c(0, 1.1), xaxt = "n", 
+                xlab = "", ylab = "", cex.lab = 1.5, col = kn)
+        }
+        axis(1, at = 1:T, labels = Frank$Time2[1:T])
+        namen.g.plot1 <- seq(1, C * T, by = T)
+        namen.g.plot2 <- paste(Frank$Time1[namen.g.plot1])
+        legend("top", col = c(1:C), namen.g.plot2, pch = c(rep(10, 
+            C)), lwd = c(rep(3, C)))
+        title(main = paste("Relative Effects"))
+    }
+    if (show.covariance == FALSE) {
+        V <- NULL}
 
-		frank.time1 <- time1.vec[id.time1]
-		frank.time2 <- time2.vec[id.time2]
 
 
-		Frank<-data.frame(Time1 = frank.time1, Time2 = frank.time2, RTE =plot.rte)
-		plot.samples <- split(Frank, Frank$Time1)
 
-		id.g<-which(names(plot.samples)==time1.vec[1])
-		ptg<-expression(p[is])
-		plot(1:T,plot.samples[[id.g]]$RTE,pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab=time2.name,ylab=ptg,cex.lab=1.5,xlim=c(0,T+1),lwd=3)
-		for (kn in 2:C)
-		{
-			id.gg<-which(names(plot.samples)==time1.vec[kn])
-			points(1:T,plot.samples[[id.gg]]$RTE,pch=10, type="b",lwd=3,ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,col=kn)
-		}
-		axis(1,at=1:T,labels=Frank$Time2[1:T])
-		namen.g.plot1<-seq(1, C*T, by = T)
-		namen.g.plot2<-paste(Frank$Time1[namen.g.plot1])
-		legend("top", col=c(1:C),namen.g.plot2,pch=c(rep(10,C)),lwd=c(rep(3,C)) )
-		title(main=paste("Relative Effects"))
-	}
-	
-	if(show.covariance==FALSE)
-	{
-  		V<-NULL
-	}
-        out.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType, covariance=V) 
-        return(out.ld.f2)
+
+            out.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType, covariance=V, model.name=model.name) 
+            return(out.ld.f2)
+
+
 }
+

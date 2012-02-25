@@ -23,11 +23,12 @@ R. Oldenbourg Verlag, Munchen Wien.
 \examples{
 ## Analysis using LD-F1 design ##
 data(panic)
-var<-c(panic[,"W0"],panic[,"W2"],panic[,"W4"],panic[,"W6"],panic[,"W8"])
-time<-c(rep(0,16),rep(2,16),rep(4,16),rep(6,16),rep(8,16))
-subject<-rep(panic[,"Patient"],5)
-pat<-c(5,4,3,2,5)
-ex.f1<-ld.f1(var,time,subject,w.pat=pat,time.name="Week",description=FALSE)
+attach(panic)
+w.pat<-c(5,4,3,2,5)
+ex.f1<-ld.f1(y=resp, time=time, subject=subject, w.pat=w.pat, time.name="Week", 
+description=FALSE)
+# LD F1 Model 
+# ----------------------- 
 # Check that the order of the time level is correct.
 # Time level:   0 2 4 6 8 
 # If the order is not correct, specify the correct order in time.order.
@@ -36,12 +37,12 @@ ex.f1<-ld.f1(var,time,subject,w.pat=pat,time.name="Week",description=FALSE)
 ex.f1$Wald.test
 
 #     Statistic df p-value
-#Week  126.6946  4       0
+#Week  126.6946  4 1.9822e-26
 
 ## ANOVA-type statistic
 ex.f1$ANOVA.test
 
 #     Statistic       df p-value
-#Week  36.93664 2.234135       0
+#Week  36.93664 2.234135 1.975781e-18
 }
 \keyword{datasets}

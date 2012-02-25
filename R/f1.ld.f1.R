@@ -1,10 +1,10 @@
 # R code for F1_LD_F1 macro
 #
 # Input:
+#		y: a vector of variable of interest
 #		group: a vector of group variable (factor level)
 #		time : a vector of time variable
 #		subject : a vector of independent subjects
-#		var: a vector of variable of interest
 #
 # Optional Input:
 #		w.pat: pattern matrix of order group level x time level
@@ -15,14 +15,12 @@
 #               description: description of the output. Default is set to TRUE (show description)
 #		time.order: a vector of time levels specifying the order.
 #		group.order: a vector of group levels specifying the order.
-#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
-#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #
 # Output:
 #               list of relative treatment effects, test results, pattern result
 #
-f1.ld.f1 <- function(var, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, time.name="Time", 
-group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
+f1.ld.f1 <- function(y, time, group, subject, w.pat=NULL, w.t=NULL, w.g=NULL, time.name="Time", group.name="Group", 
+description=TRUE, time.order=NULL, group.order=NULL,plot.RTE=TRUE,show.covariance=FALSE, order.warning=TRUE)
 {
 #        For model description see Brunner et al. (2002)
 #
@@ -55,8 +53,9 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 
 #    check whether the input variables are entered correctly
 
+	   var<-y
 	   if(is.null(var)||is.null(time)||is.null(group)||is.null(subject))
-		stop("At least one of the input parameters (var, time, group, or subject) is not found.")
+		stop("At least one of the input parameters (y, time, group, or subject) is not found.")
 
            sublen<-length(subject)
 	   varlen<-length(var)
@@ -64,7 +63,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 	   grolen<-length(group)
 
 	   if((sublen!=varlen)||(sublen!=timlen)||(sublen!=grolen))
-		stop("At least one of the input parameters (var, time, group, or subject) has a different length.")
+		stop("At least one of the input parameters (y, time, group, or subject) has a different length.")
 
 #####################################################################################
 # The following are the helper functions for the main function
@@ -161,8 +160,8 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
        		v <- Un.const^2/v.den
 		if(!is.na(Un)&&(v > 0))
        		{
-			pGN <- (1-pnorm(abs(Un)))*2
-       			pGT <- (1-pt(abs(Un), v))*2
+			pGN <- (pnorm(abs(Un),lower.tail=FALSE))*2
+       			pGT <- (pt(abs(Un), v,lower.tail=FALSE))*2
 		}
 		else
 		{
@@ -176,8 +175,8 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
        		vT <- UnT.c^2/vT
 		if(!is.na(UnT)&&(vT > 0))
        		{
-       			pTN <- (1-pnorm(abs(UnT)))*2
-       			pTT <- (1-pt(abs(UnT),vT))*2
+       			pTN <- (pnorm(abs(UnT),lower.tail=FALSE))*2
+       			pTT <- (pt(abs(UnT),vT,lower.tail=FALSE))*2
 		}
 		else
 		{
@@ -190,8 +189,8 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
        		UnAT <- UnAT/sqrt(UnT.c)
 		if(!is.na(UnAT)&&(vT > 0))
 		{
-       			pATN <- (1-pnorm(abs(UnAT)))*2
-       			pATT <- (1-pt(abs(UnAT),vT))*2
+       			pATN <- (pnorm(abs(UnAT),lower.tail=FALSE))*2
+       			pATT <- (pt(abs(UnAT),vT,lower.tail=FALSE))*2
 		}
 		else
 		{
@@ -235,7 +234,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 		Q.a <- t(cpg) %*% ginv(cvc) %*% cpg;
 
 	        df.a <- tr(cvc%*%ginv(cvc))
-		if(!is.na(Q.a) && (Q.a > 0)) pval.a <- round(1 - pchisq(Q.a, df.a),Inf)
+		if(!is.na(Q.a) && (Q.a > 0)) pval.a <- round(pchisq(Q.a, df.a,lower.tail=FALSE),Inf)
 		else pval.a <- NA;
 		A <- c(W=Q.a, df=df.a, pval=pval.a);
 
@@ -248,7 +247,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
         	cvc <- Pt %*% S %*% Pt
 		Q.t <- (n/N^2)*t(cpt) %*% ginv(cvc) %*% cpt;
         	df.t <- tr(cvc%*%ginv(cvc))
-		if(!is.na(Q.t) && (Q.t > 0)) pval.t <- round(1 - pchisq(Q.t, df.t),Inf)
+		if(!is.na(Q.t) && (Q.t > 0)) pval.t <- round(pchisq(Q.t, df.t,lower.tail=FALSE),Inf)
 		else pval.t <- NA;
 		T <- c(Q.t, df.t, pval.t);
 
@@ -259,7 +258,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
         	cvc <- Cat %*% V %*% t(Cat)
         	Q.at <- (n/N^2)*t(Cat %*% R) %*% ginv(cvc) %*% Cat %*% R;
         	df.at <- tr(cvc%*%ginv(cvc))
-		if(!is.na(Q.at) && (Q.at > 0)) pval.at <- round(1 - pchisq(Q.at, df.at), Inf)
+		if(!is.na(Q.at) && (Q.at > 0)) pval.at <- round(pchisq(Q.at, df.at,lower.tail=FALSE), Inf)
 		else pval.at <- NA;
 		AT <- c(Q.at, df.at, pval.at);
 
@@ -300,7 +299,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 		F.a <- t(cpg) %*% cpg/sum(diag(Pa %*% Sigma));
 		# equation (5.7)
 		df1.a <- sum(diag(Pa %*% Sigma))^2/sum(diag((Pa %*% Sigma) %*% (Pa %*% Sigma)));
-		if((!is.na(F.a))&&(!is.na(df1.a))&&(F.a > 0)&&(df1.a > 0)) pval.a<-1-pchisq(F.a*df1.a,df1.a)
+		if((!is.na(F.a))&&(!is.na(df1.a))&&(F.a > 0)&&(df1.a > 0)) pval.a<-pchisq(F.a*df1.a,df1.a,lower.tail=FALSE)
 		else pval.a<-NA;
 		A <- round(c(B=F.a, df=df1.a, pval=pval.a), Inf);
 
@@ -313,14 +312,14 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 		# equation (8.21)
 		F.t <- (n/N^2) * (t(cpt) %*% cpt)/sum(diag(Pt %*% S));
 		df1.t <- sum(diag(Pt %*% S))^2/sum(diag(Pt %*% S %*% Pt %*% S));
-		if((!is.na(F.t))&&(!is.na(df1.t))&&(F.t > 0)&&(df1.t > 0)) pval.t<-1-pchisq(F.t*df1.t,df1.t)
+		if((!is.na(F.t))&&(!is.na(df1.t))&&(F.t > 0)&&(df1.t > 0)) pval.t<-pchisq(F.t*df1.t,df1.t,lower.tail=FALSE)
 		else pval.t<-NA;
 		T <- round(c(F.t, df1.t, pval.t),Inf);
 
 		# Global interaction effect
 		F.at <- n * t(p) %*% Pat %*% p/sum(diag(Pat %*% V));
 		df1.at <- sum(diag(Pat %*% V))^2/sum(diag(Pat %*% V %*% Pat %*% V));
-		if((!is.na(F.at))&&(!is.na(df1.at))&&(F.at > 0)&&(df1.at > 0)) pval.at<-1-pchisq(F.at*df1.at,df1.at)
+		if((!is.na(F.at))&&(!is.na(df1.at))&&(F.at > 0)&&(df1.at > 0)) pval.at<-pchisq(F.at*df1.at,df1.at,lower.tail=FALSE)
 		else pval.at<-NA;
 		AT <- round(c(F.at, df1.at, pval.at), Inf);
 		out.box <- rbind(A, T, AT);
@@ -329,7 +328,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 		# modified Box-approximation
 		df1 <- df(V, a, t, ni, ind)$df1
 		df2 <- df(V, a, t, ni, ind)$df2
-		if((!is.na(F.a)) && (!is.na(df1)) && (!is.na(df2)) && (F.a > 0) && (df1 > 0) && (df2 > 0)) pval.mb <- 1-pf(F.a, df1, df2)
+		if((!is.na(F.a)) && (!is.na(df1)) && (!is.na(df2)) && (F.a > 0) && (df1 > 0) && (df2 > 0)) pval.mb <- pf(F.a, df1, df2,lower.tail=FALSE)
 		else pval.mb <- NA
 		A <- rbind(round(c(B=F.a, df1=df1, df2=df2, pval=pval.mb), Inf));
 	        colnames(A) <- c("Statistic", "df1", "df2","p-value")
@@ -365,9 +364,9 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 			F.s <- round((n/N^2) * t(cp) %*% cp/sum(diag(Pt %*% V)), Inf);
                 	df <- tr((Pt %*% V %*% Pt)%*%ginv(Pt %*% V %*% Pt))
 			df1 <- round(sum(diag(Pt %*% V))^2/sum(diag(Pt %*% V %*% Pt %*% V)), Inf);
-			if((!is.na(Q.s)) && (!is.na(df)) && (Q.s > 0) && (df > 0)) pval <- round(1 - pchisq(Q.s, df), Inf)
+			if((!is.na(Q.s)) && (!is.na(df)) && (Q.s > 0) && (df > 0)) pval <- round(pchisq(Q.s, df,lower.tail=FALSE), Inf)
 			else pval <- NA;
-			if((!is.na(F.s)) && (!is.na(df1)) && (F.s > 0) && (df1 > 0)) pval1<-round(1-pchisq(F.s*df1,df1), Inf)
+			if((!is.na(F.s)) && (!is.na(df1)) && (F.s > 0) && (df1 > 0)) pval1<-round(pchisq(F.s*df1,df1,lower.tail=FALSE), Inf)
 			else pval1 <- NA
 			out <- c(Q.s, df, pval);
 			out1 <- c(F.s, df1, pval1);
@@ -380,9 +379,9 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 				pi <- (R - 0.05)/N;
 	     	     	        s2 <- (ni[i]/n) * as.numeric(pat.dat[i,]) %*% Pt %*% V %*% Pt %*% as.numeric(pat.dat[i,]);
         		        L <- round(sqrt(ni[i]/s2) * as.numeric(pat.dat[i,]) %*% Pt %*% pi, Inf);
-				p.nor <- round((1 - pnorm(L)), Inf);
+				p.nor <- round((pnorm(L,lower.tail=FALSE)), Inf);
 				df1 <- ni[i] -1;
-				pval <- round((1 - pt(L, df1)), Inf);
+				pval <- round((pt(L, df1,lower.tail=FALSE)), Inf);
 				normal[i,] <- c(L, p.nor, df1, pval);
 			}
 		}
@@ -445,7 +444,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 					w <- matrix(w, t,1)
 					sign <- t(w)%*%Pt%*%(V[1:t,1:t]+V[(t+1):(2*t),(t+1):(2*t)])%*%Pt%*%w
 					out.pat[ll,1] <- sqrt(nn/sign)*t(w-mean(w))%*%(R[1:t,] - R[(t+1):(2*t),])/NN
-					out.pat[ll,2] <- 1-pnorm(out.pat[ll,1])
+					out.pat[ll,2] <- pnorm(out.pat[ll,1],lower.tail=FALSE)
 					posA <- matrix(0, a, 1);
 					posA[i,]<- 1; posA[j,] <- 1;
 					CC <- t(w)%*%Pt
@@ -453,7 +452,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 					S <- M%*%V11%*%t(M)
 					lambda <- solve(diag(c(ni))-I(a))
 					out.pat[ll,3] <- tr(S)^2/tr(S*S*lambda)
-					out.pat[ll,4] <- 1-pt(out.pat[ll,1],out.pat[ll,3])
+					out.pat[ll,4] <- pt(out.pat[ll,1],out.pat[ll,3],lower.tail=FALSE)
 					row.names(out.pat)[ll] <- paste(group.name,lev.grp[i],":",group.name,lev.grp[j],sep="");
 					ll <- ll + 1
 				}
@@ -485,8 +484,8 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 		df<- df.p(V, a, t, ni, ind, w.g)
 
 		Ln <- Kn/sqrt(sign)
-		pval.t <- 1-pt(Ln, df)
-		pval.n <- 1-pnorm(Ln)
+		pval.t <- pt(Ln, df,lower.tail=FALSE)
+		pval.n <- pnorm(Ln,lower.tail=FALSE)
 		out<-rbind(round(c(Ln=Ln, pval.N=pval.n, df=df, pval.t=pval.t),Inf))
 	        colnames(out) <- c("Statistic", "p-value(N)", "df", "p-value(T)")
                 rownames(out) <- c(group.name)
@@ -726,11 +725,10 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 	data <- cbind(group, time, subject, rscore, ind) # changed on 16 August, 2004
 	ni <- count.subj(group, subject)
 	n <- sum(ni); # number of subjects in the experiment
+	   model.name<-"F1 LD F1 Model"
 
         if(description==TRUE)
         {
-           	cat(" F1 LD F1 Model ")
-           	cat("\n ----------------------- \n")
            	cat(" Total number of observations: ",sum(ind),"\n")
            	cat(" Total number of subjects:  " , n,"\n")
           	cat(" Total number of missing observations: ",N.na,"\n")
@@ -783,11 +781,16 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
            	cat(" covariance = Covariance matrix","\n")
            	cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       }
+	
+	if(order.warning==TRUE)
+	{
+           	cat(" F1 LD F1 Model ")
+           	cat("\n ----------------------- \n")
            	cat(" Check that the order of the time and group levels are correct.\n")
            	cat(" Time level:  " , paste(tlevel),"\n")
            	cat(" Group level:  " , paste(glevel),"\n")
            	cat(" If the order is not correct, specify the correct order in time.order or group.order.\n\n")
-
+	}
 
 	# unconditional group and time means
 	tab <- t(matrix(mean.factor(rscore, group:time, ind), t, a))
@@ -808,11 +811,9 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 
         sdat <- NULL
 	rte <- list(RTE=rte(group, time, ind, rscore))
-
 	rte.plot<-data.frame(rte)
 	namen.plot<-rownames(rte.plot)[(a+1):(a+t)]
 	namen.plot.g<-rownames(rte.plot)[1:a]
-
 	#rte <- data.frame(rte(group, time, ind, rscore))
 	### case2x2 is available only when there is no missing observation in the 2-by-2 design.
 	### otherwise, it returns NULL.
@@ -833,31 +834,31 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, plot.RT
 
         if(!is.null(w.g)) pattern.g <- pattern.group(group, time, subject, rscore, ind, a, t, ni, g.mean, w.g)
         else pattern.g <- NULL
+            if (show.covariance == FALSE) {
+        V2 <- NULL}
+        out <- c(sdat, rte, out2, pattern.g, list(covariance=V2), model.name=model.name)
+     if (plot.RTE == TRUE) {
+        ptg <- expression(p[i][j])
+        rte.plot <- data.frame(rte)[, 3][(a + t + 1):(a + t + 
+            a * t)]
+        kk.time <- 1:t
+        plot(kk.time, rte.plot[kk.time], pch = 10, type = "b", 
+            lwd = 3, ylim = c(0, 1.1), xaxt = "n", xlab = time.name, 
+            ylab = ptg, cex.lab = 1.5)
+        axis(1, at = kk.time, labels = namen.plot[kk.time])
+        group.id.help <- sort(c(rep(1:a, t)))
+        for (ss in 2:a) {
+            points(kk.time, rte.plot[group.id.help == ss], pch = 10, 
+                type = "b", lwd = 3, ylim = c(0, 1.1), xaxt = "n", 
+                xlab = "", ylab = ptg, cex.lab = 1.5, col = ss)
+        }
+        legend("top", col = c(1:a), namen.plot.g, pch = c(rep(10, 
+            a)), lwd = c(rep(3, a)))
+        title(main = paste("Relative Effects"))
+    }
 
-	if(show.covariance==FALSE)
-	{
-  		V2<-NULL
-	}
 
-        out <- c(sdat, rte, out2, pattern.g, list(covariance=V2))
 
-	if (plot.RTE==TRUE)
-	{
-		ptg<-expression(p[i][j])
-		rte.plot<-data.frame(rte)[,3][(a+t+1):(a+t+a*t)]
-
-		kk.time <-1:t
-		plot(kk.time,rte.plot[kk.time], pch=10, type="b",lwd=3,ylim=c(0,1.1),xaxt="n", xlab=time.name, ylab=ptg,cex.lab=1.5)
-		axis(1,at=kk.time, labels=namen.plot[kk.time])
-		group.id.help<-sort(c(rep(1:a,t)))
-
-		for (ss in 2:a)
-		{
-			points(kk.time,rte.plot[group.id.help==ss], pch=10, type="b",lwd=3,ylim=c(0,1.1),xaxt="n", xlab="",ylab=ptg,cex.lab=1.5,col=ss)
-		}
-
-		legend("top", col=c(1:a),namen.plot.g,pch=c(rep(10,a)),lwd=c(rep(3,a)) )
-		title(main=paste("Relative Effects"))
-	}
         return(out)
 }
+

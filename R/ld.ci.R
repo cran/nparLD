@@ -1,7 +1,7 @@
 # R program for LD_CI macro
 #
 #   Input:   
-#               var: a vector of variable of interest
+#               y: a vector of variable of interest
 #               group: a vector of factor variable
 #               time: a vector of the time variable
 #               subject: a vector of independent subjects
@@ -11,12 +11,11 @@
 #               description: description of the output. Default is set to TRUE (show description)
 #		time.order: a vector of time levels specifying the order.
 #		group.order: a vector of group levels specifying the order.
-#		plot.CI: decides whether to show plot of confidence interval or not. Default is set to TRUE
 #   Output:
 #             confidence interval and bias estimation in a matrix form
 #  
-ld.ci<-function(var, time, subject, group=NULL, alpha=0.05, time.name="Time", 
-group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=4, plot.CI=TRUE)
+ld.ci<-function(y, time, subject, group=NULL, alpha=0.05, time.name="Time", group.name="Group", 
+description=TRUE, time.order=NULL, group.order=NULL, rounds=4, plot.CI = TRUE, order.warning=TRUE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -55,16 +54,16 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=
 #                RMeans: rank means of each unique factor combinations and each factor
 #                Ni: number of observations at each level
 
-
+     	   var<-y
 	   if(is.null(var)||is.null(time)||is.null(subject)) 
-		stop("At least one of the input parameters (var, time, or subject) is not found.")
+		stop("At least one of the input parameters (y, time, or subject) is not found.")
 	   
            sublen<-length(subject)
 	   varlen<-length(var)
 	   timlen<-length(time)
 	   
 	   if((sublen!=varlen)||(sublen!=timlen))
-		stop("At least one of the input parameters (var, time, or subject) has a different length.")
+		stop("At least one of the input parameters (y, time, or subject) has a different length.")
 
 	   if(!is.null(group))
 	   {
@@ -172,7 +171,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=
 
 	if(is.element(0, Lamda)) 
 	{
-		cat("\n There are some missing in the data. This program does not ")
+	cat("\n There are some missing in the data. This program does not ")
 		cat("\n accept missing values. Please verify and try again.\n")
 		return(" Status : Stopped execution of program due to error in input. ")
 	}
@@ -246,6 +245,9 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=
 
 	PRes1 <- cbind(RMeans, Nobs, RTE)
 ###########################################################
+
+
+
 
 	rd.PRes1 <- round(PRes1, Inf)
 	rd.PRes1 <- cbind(TIME, rd.PRes1)
@@ -407,16 +409,17 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=
 	CI <-  cbind(matrix(t(pL), A*T, 1), matrix(t(pU), A*T, 1))
 
 #-------------------------Create a nice output table---------------------------#
-	frank.RMeans <- round(RMeans,rounds)
-	frank.Nobs <- Nobs
-	frank.RTE <- round(RTE,rounds)
-	frank.Bias <- round(c(Da.list[[3]]),rounds)
-	frank.Var <-round(c(t(sig.sq)),rounds)
-	frank.Lower <- round(matrix(t(pL), A*T, 1),rounds)
-	frank.Upper <- round(matrix(t(pU), A*T, 1),rounds)
+frank.RMeans <- round(RMeans,rounds)
+frank.Nobs <- Nobs
+frank.RTE <- round(RTE,rounds)
+frank.Bias <- round(c(Da.list[[3]]),rounds)
+frank.Var <-round(c(t(sig.sq)),rounds)
+frank.Lower <- round(matrix(t(pL), A*T, 1),rounds)
+frank.Upper <- round(matrix(t(pU), A*T, 1),rounds)
 
-	frank.Time<-TIME
-	frank.Group<-paste(group.name,GROUP,sep="")
+frank.Time<-TIME
+frank.Group<-paste(group.name,GROUP,sep="")
+
 
 	rd.PRes1 <- cbind(rd.PRes1, round(Da.list[[3]], 4), round(c(t(sig.sq)), 4), round(CI, 4))
 	colnames(rd.PRes1) <-  c(time.name, "RankMeans", "Nobs", "RTE", "Bias", "Variance", "Lower_bound", "Upper_bound")
@@ -426,11 +429,7 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=
 
 	if(description==TRUE)
 	{
-		cat(" LD CI Model ")
-		cat("\n ----------------------- ")
-
-		cat("\n Bias Estimation and Confidence Intervals for Relative Effects \n")
-
+		cat(" Bias Estimation and Confidence Intervals for Relative Effects \n")
 		cat("\n Total number of observations :", (N*T))
 		cat("\n Total number of Subject :", N)
 		cat("\n Significance level (alpha) : ", alpha)
@@ -450,47 +449,31 @@ group.name="Group", description=TRUE, time.order=NULL, group.order=NULL, rounds=
            	cat("\n Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.")
 		cat("\n\n")
 	}
+	
+	if(order.warning==TRUE)
+	{
+		cat(" LD CI Calculations ")
+		cat("\n ----------------------- \n")
            	cat(" Order of the time and group levels.\n") 
            	cat(" Time level:  " , paste(tlevel),"\n")
            	cat(" Group level:  " , paste(glevel),"\n")
-           	cat(" The order may be specified in time.order or group.order.\n\n")
-
-	Frank <-data.frame(Group=frank.Group, Time = frank.Time, Nobs=frank.Nobs, RankMeans=frank.RMeans, RTE=frank.RTE,Bias=frank.Bias, Variance=frank.Var, Lower=frank.Lower, Upper = frank.Upper)
-
-	if (plot.CI==TRUE) 
-	{
-		plot.samples <- split(Frank, Frank$Group)
-		plot(1:T,plot.samples[[1]]$RTE,pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab=time.name,ylab="",cex.lab=1.5,xlim=c(0,T+1),lwd=3)
-
-		for (l in 1:T)
-		{
-			points(rep(l,2), c(plot.samples[[1]]$Lower[l], plot.samples[[1]]$Upper[l]), type="l",lwd=3)
-			text(l,plot.samples[[1]]$Lower[l],"_",cex=2)
-			text(l,plot.samples[[1]]$Upper[l],"_",cex=2)
-		}
-		if (A==1){axis(1,at=1:T,labels=plot.samples[[1]]$Time)}
-
-		if (A>=2)
-		{
-			for (kn in 2:A)
-			{
-				for (fk in 1:T)
-				{
-					x.neu<-kn/10+c(1:T)
-					points(x.neu,plot.samples[[kn]]$RTE,pch=10, type="b",lwd=2,ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,col=kn)
-					points(rep(x.neu[fk],2), c(plot.samples[[kn]]$Lower[fk], plot.samples[[kn]]$Upper[fk]), type="l",col=kn,lwd=3)
-					axis(1,at=1:T,labels=plot.samples[[1]]$Time)
-					text(x.neu[fk],plot.samples[[kn]]$Lower[fk],"_",cex=2,col=kn)
-					text(x.neu[fk],plot.samples[[kn]]$Upper[fk],"_",cex=2,col=kn)
-				}
-			}
-
-			namen.g.plot1<-seq(1, A*T, by = T)
-			namen.g.plot2<-paste(Frank$Group[namen.g.plot1])
-			legend("top", col=c(1:a),namen.g.plot2,pch=c(rep(10,a)),lwd=c(rep(3,a)) )
-		}
-
-		title(main=paste((1-alpha)*100,"% Confidence Intervals"))
+           	cat(" The order may be specified in time.order or group.order (does not affect the calculation).\n\n")
 	}
-	return(list(summary=Frank))
+
+#abline(h = 0, col = "red", lty = 1, lwd = 2)
+ #for (i in 1:nc) {points(rep(k[i],2),c(Lower.SCI[i],Upper.SCI[i]),type="l")}
+#upper<-"_"
+#lower <- "_"
+#points(x = k, y = Lower.SCI, pch = lower,cex=1.5)
+#points(x = k, y = Upper.SCI, pch = upper,cex=1.5)
+#axis(1, at = k, labels = rownames(C),font.axis=1.5,cex.axis=1.5)
+
+#}
+
+
+Frank <-data.frame(Group=frank.Group, Time = frank.Time, Nobs=frank.Nobs, RankMeans=frank.RMeans, RTE=frank.RTE,Bias=frank.Bias, Variance=frank.Var, Lower=frank.Lower, Upper = frank.Upper )
+
+
+Frank
 }
+

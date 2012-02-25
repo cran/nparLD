@@ -6,13 +6,13 @@ This function performs calculations of the two-sided confidence intervals for th
 }
 
 \usage{
-ld.ci(var, time, subject, group=NULL, alpha=0.05, time.name="Time", 
+ld.ci(y, time, subject, group=NULL, alpha=0.05, time.name="Time", 
 group.name="Group", description=TRUE, time.order=NULL, group.order=NULL,
-rounds=4, plot.CI = TRUE)
+rounds=4, plot.CI=TRUE, order.warning=TRUE)
 }
 
 \arguments{
-  \item{var}{a vector of numeric variable of interest.}
+  \item{y}{a vector of numeric variable of interest.}
   \item{time}{a vector of the sub-plot factor variable. See Details for more explanation.}
   \item{subject}{a vector of individual subjects.}
   \item{group}{a vector of the whole-plot factor variable; the default option is NULL. See Details for more explanation.}
@@ -24,17 +24,13 @@ rounds=4, plot.CI = TRUE)
   \item{group.order}{a character or numeric vector specifying the order of the group levels; the default option is NULL, in which case, the levels are in the order of the original data.}
   \item{rounds}{a numeric specifying the number of digits to be displayed.}
   \item{plot.CI}{an indicator for whether a plot of the confidence interval (CI) should be shown; the default option is TRUE.}
+  \item{order.warning}{an indicator for whether a short description of the warning regarding the ordering of factors should be shown; the default option is TRUE.}
 }
 
 \details{
-A whole-plot factor refers to a factor effective for each subject at all times. A sub-plot factor refers to a factor effective at a single time point for all time curves and all subjects. See Brunner et al. (2002) for more examples. Also, note that the interval for the relative treatment effects can only be interpreted as a confidence interval when the sample sample sizes are (approximately) the same (pp.60, Brunner et al., 2002).
-}
+A whole-plot factor refers to a factor effective for each subject at all times. A sub-plot factor refers to a factor effective at a single time point for all time curves and all subjects. See Brunner et al. (2002) for more examples. Also, note that the interval for the relative treatment effects can only be interpreted as a confidence interval when the sample sample sizes are (approximately) the same (pp.60, Brunner et al., 2002).\cr
 
-\value{
-A list with the following numeric components.
-
-  \item{summary}{the relative treatment effect (RTE), bias estimation (Bias), variance estimation (Variance), as well as the lower and upper bound of the RTE (Lower bound, Upper bound, respectively), in the form of an n-by-8 matrix where n is the number of group factor levels times the number of time factor levels.}
-
+The function returns a list with the following numeric components: the relative treatment effect (RTE), bias estimation (Bias), variance estimation (Variance), the lower and upper bound of the RTE (Lower bound, Upper bound, respectively), in the form of an n-by-9 data frame where n is the number of group factor levels times the number of time factor levels.
 }
 
 \references{
@@ -48,25 +44,26 @@ R. Oldenbourg Verlag, Munchen Wien.
 }
 \author{Kimihiro Noguchi, Karthinathan Thangavelu, Frank Konietschke, Yulia Gel, Edgar Brunner}
 
-\seealso{\code{\link{ld.f1}}, \code{\link{ld.f2}}, \code{\link{f1.ld.f1}}, \code{\link{f1.ld.f2}}, \code{\link{f2.ld.f1}}, \code{\link{shoulder}}}
+\seealso{\code{\link{nparLD}}, \code{\link{ld.f1}}, \code{\link{ld.f2}}, 
+\code{\link{f1.ld.f1}}, \code{\link{f1.ld.f2}}, \code{\link{f2.ld.f1}}, 
+\code{\link{shoulder}}}
 \examples{
 ## Example with the "Shoulder tip pain study" data ##
 data(shoulder)
-var<-c(shoulder[,"T1"],shoulder[,"T2"],shoulder[,"T3"],shoulder[,"T4"],
-shoulder[,"T5"],shoulder[,"T6"])
-time<-c(rep(1,41),rep(2,41),rep(3,41),rep(4,41),rep(5,41),rep(6,41))
-subject<-rep(shoulder[,"Patient"],6)
-group<-rep(paste(shoulder[,"Treat"],shoulder[,"Gender"],sep=""),6)
-ex.ci<-ld.ci(var,time,subject,group=group,alpha=0.05, time.name="Time",
-group.name="Group",description=FALSE, time.order=c(1,2,3,4,5,6), 
+attach(shoulder)
+group<-paste(group1, group2, sep="")
+ex.ci<-ld.ci(y=resp, time=time, subject=subject, group=group, alpha=0.05, 
+time.name="Time", group.name="Group", description=FALSE, time.order=c(1,2,3,4,5,6), 
 group.order=c("YF","YM","NF","NM"))
+# LD CI Calculations 
+# ----------------------- 
 # Order of the time and group levels.
 # Time level:   1 2 3 4 5 6 
 # Group level:   YF YM NF NM 
 # The order may be specified in time.order or group.order.
 
 ## Summary of the output
-ex.ci$summary
+ex.ci
 
 #     Group Time Nobs RankMeans    RTE    Bias Variance  Lower  Upper
 #1  GroupYF    1   14  123.9643 0.5019  0.0008   0.1680 0.3792 0.6243

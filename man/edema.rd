@@ -3,7 +3,7 @@
 \docType{data}
 \title{Postoperative edema}
 \description{
-Measurements of skin temperatures in (degree Celcius/10) of both operated and non-operated hands from a group of patients who had a surgery on a hand.
+Measurements of skin temperatures (in degree Celcius/10) of both operated and non-operated hands from a group of patients who had a surgery on a hand.
 }
 \usage{data(edema)}
 \format{
@@ -23,26 +23,21 @@ R. Oldenbourg Verlag, Munchen Wien.
 \examples{
 ## Analysis using F1-LD-F2 design ##
 data(edema)
-var<-c(edema[,"n01"],edema[,"n1"],edema[,"n3"],edema[,"n5"],
-edema[,"o01"],edema[,"o1"],edema[,"o3"],edema[,"o5"])
-time1<-factor(c(rep("Healthy",232),rep("Operated",232)))
-time2<-c(rep(-1,58),rep(1,58),rep(3,58),rep(5,58),
-rep(-1,58),rep(1,58),rep(3,58),rep(5,58))
-group<-rep(edema[,"Group"],8)
-subject<-rep(edema[,"Patient"],8)
-ex.f1f2<-f1.ld.f2(var, time1, time2, group, subject, time1.name = "Hand", 
-time2.name = "Day", group.name = "Treatment", description=FALSE)
+attach(edema)
+ex.f1f2<-f1.ld.f2(y=resp, time1=time1, time2=time2, group=group, subject=subject, 
+time1.name="Hand", time2.name="Day", group.name="Treatment", description=FALSE)
+# F1 LD F2 Model 
+# ----------------------- 
 # Check that the order of the time1, time2, and group levels are correct.
 # Time1 level:   Healthy Operated 
 # Time2 level:   -1 1 3 5 
 # Group level:   Drug Placebo 
-# If the order is not correct, specify the correct order in time1.order, time2.order, 
-# or group.order.
+# If the order is not correct, specify the correct order in time1.order, 
+# time2.order, or group.order.
 
 ## Wald-type statistic 
 ex.f1f2$Wald.test
 
-#$Wald.test
 #                    Statistic df      p-value
 #Treatment           1.0725762  1 3.003643e-01
 #Hand               25.8758257  1 3.641005e-07
@@ -56,12 +51,12 @@ ex.f1f2$Wald.test
 ex.f1f2$ANOVA.test
 
 #                    Statistic       df      p-value
-#Treatment           1.0725762 1.000000 3.003668e-01
-#Hand               25.8758257 1.000000 3.647569e-07
-#Day                11.0630080 2.699667 9.682198e-07
-#Treatment:Hand      0.3304448 1.000000 5.653986e-01
-#Day:Hand           15.1854889 2.630202 6.208596e-09
-#Treatment:Day       1.3342605 2.699667 2.625598e-01
-#Treatment:Hand:Day  0.7170325 2.630202 5.242392e-01
+#Treatment           1.0725762 1.000000 3.003643e-01
+#Hand               25.8758257 1.000000 3.641005e-07
+#Day                11.0630080 2.699667 9.661602e-07
+#Treatment:Hand      0.3304448 1.000000 5.653973e-01
+#Day:Hand           15.1854889 2.630202 6.184646e-09
+#Treatment:Day       1.3342605 2.699667 2.625538e-01
+#Treatment:Hand:Day  0.7170325 2.630202 5.242367e-01
 }
 \keyword{datasets}

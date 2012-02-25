@@ -1,7 +1,7 @@
 # R program for F2_LD_F1 macro
 #
 #   Input:   
-#               var: a vector of variable of interest
+#               y: a vector of variable of interest
 #               group1: a vector of factor1 variable
 #               group2: a vector of factor2 variable
 #               time: a vector of the time variable
@@ -13,14 +13,12 @@
 #		time.order: a vector of time levels specifying the order.
 #		group1.order: a vector of group1 levels specifying the order.
 #		group2.order: a vector of group2 levels specifying the order.
-#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
-#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-f2.ld.f1 <- function(var, time, group1, group2, subject, time.name="Time", 
+f2.ld.f1 <- function(y, time, group1, group2, subject, time.name="Time", 
 group1.name="GroupA", group2.name="GroupB", description=TRUE, 
-time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
+time.order=NULL, group1.order=NULL, group2.order=NULL,plot.RTE=TRUE,show.covariance=FALSE,order.warning=TRUE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -61,8 +59,9 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 
 #    check whether the input variables are entered correctly
 
+	   var<-y
 	   if(is.null(var)||is.null(time)||is.null(group1)||is.null(group2)||is.null(subject)) 
-		stop("At least one of the input parameters (var, time, group1, group2, or subject) is not found.")
+		stop("At least one of the input parameters (y, time, group1, group2, or subject) is not found.")
 	   
            sublen<-length(subject)
 	   varlen<-length(var)
@@ -71,7 +70,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 	   gro2len<-length(group2)
 	   
 	   if((sublen!=varlen)||(sublen!=timlen)||(sublen!=gro1len)||(sublen!=gro2len))
-		stop("At least one of the input parameters (var, time, group1, group2, or subject) has a different length.")
+		stop("At least one of the input parameters (y, time, group1, group2, or subject) has a different length.")
 
 	   library(MASS)
 
@@ -401,11 +400,10 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 	rownames(rd.PRes1)<-SOURCE
 
 	### Description output
+	   model.name<-"F2 LD F1 Model"
 
 	if(description==TRUE)
 	{
-		cat(" F2 LD F1 Model ")
-           	cat("\n ----------------------- \n")
            	cat(" Total number of observations: ",NN,"\n") 
            	cat(" Total number of subjects:  " , N,"\n")
            	cat(" Total number of missing observations: ",(N*T - NN),"\n") 
@@ -425,11 +423,17 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
            	cat(" covariance = Covariance matrix","\n")
            	cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
 	}
+
+	if(order.warning==TRUE)
+	{
+		cat(" F2 LD F1 Model ")
+           	cat("\n ----------------------- \n")
            	cat(" Check that the order of the time, group1, and group2 levels are correct.\n") 
            	cat(" Time level:  " , paste(origtlevel),"\n")
            	cat(" Group1 level:  " , paste(origg1level),"\n")
            	cat(" Group2 level:  " , paste(origg2level),"\n")
            	cat(" If the order is not correct, specify the correct order in time.order, group1.order, or group2.order.\n\n")
+	}
 
 	### Statistics calculation
 
@@ -539,25 +543,25 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		dfWBT <- qr(CBT)$rank
 		dfWABT <- qr(CABT)$rank
 
-		if(!is.na(WA) && WA > 0) pWA <- 1 - pchisq(WA, dfWA)
+		if(!is.na(WA) && WA > 0) pWA <- pchisq(WA, dfWA, lower.tail=FALSE)
 		else pWA <- NA
 
-		if(!is.na(WB) && WB > 0) pWB <- 1 - pchisq(WB, dfWB)
+		if(!is.na(WB) && WB > 0) pWB <- pchisq(WB, dfWB, lower.tail=FALSE)
 		else pWB <- NA
 
-		if(!is.na(WT) && WT > 0) pWT <- 1 - pchisq(WT, dfWT)
+		if(!is.na(WT) && WT > 0) pWT <- pchisq(WT, dfWT, lower.tail=FALSE)
 		else pWT <- NA
 
-		if(!is.na(WAB) && WAB > 0) pWAB <- 1 - pchisq(WAB, dfWAB)
+		if(!is.na(WAB) && WAB > 0) pWAB <- pchisq(WAB, dfWAB, lower.tail=FALSE)
 		else pWAB <- NA
 
-		if(!is.na(WBT) && WBT > 0) pWBT <- 1 - pchisq(WBT, dfWBT)
+		if(!is.na(WBT) && WBT > 0) pWBT <- pchisq(WBT, dfWBT, lower.tail=FALSE)
 		else pWBT <- NA
 
-		if(!is.na(WAT) && WAT > 0) pWAT <- 1 - pchisq(WAT, dfWAT)
+		if(!is.na(WAT) && WAT > 0) pWAT <- pchisq(WAT, dfWAT, lower.tail=FALSE)
 		else pWAT <- NA
 
-		if(!is.na(WABT) && WABT > 0) pWABT <- 1 - pchisq(WABT, dfWABT)
+		if(!is.na(WABT) && WABT > 0) pWABT <- pchisq(WABT, dfWABT, lower.tail=FALSE)
 		else pWABT <- NA
 
 		### Wald type Statistics calculation
@@ -595,7 +599,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BA <- (N/fn.tr(TVA)) * ((t(RTE.B)) %*% BtA %*% (RTE.B))
 		BAf <- ((fn.tr(BtA%*%V))^2)/(fn.tr(BtA%*%V%*%BtA%*%V))
 
-		if((!is.na(BA))&&(!is.na(BAf))&&(BA > 0)&&(BAf > 0)) BAp <- 1 - pf(BA, BAf, 100000)
+		if((!is.na(BA))&&(!is.na(BAf))&&(BA > 0)&&(BAf > 0)) BAp <- pf(BA, BAf, Inf, lower.tail=FALSE)
 		else BAp <- NA
 
 		TVB <- BtB%*%V
@@ -603,7 +607,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BB <- (N/fn.tr(TVB)) * ((t(RTE.B)) %*% BtB %*% (RTE.B))
 		BBf <- ((fn.tr(BtB%*%V))^2)/(fn.tr(BtB%*%V%*%BtB%*%V))
 
-		if((!is.na(BB))&&(!is.na(BBf))&&(BB > 0)&&(BBf > 0)) BBp <- 1 - pf(BB, BBf, 100000)
+		if((!is.na(BB))&&(!is.na(BBf))&&(BB > 0)&&(BBf > 0)) BBp <- pf(BB, BBf, Inf, lower.tail=FALSE)
 		else BBp <- NA
 
 		TVT <- BtT%*%V
@@ -611,7 +615,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BT <- (N/fn.tr(TVT)) * ((t(RTE.B)) %*% BtT %*% (RTE.B))
 		BTf <- ((fn.tr(BtT%*%V))^2)/(fn.tr(BtT%*%V%*%BtT%*%V))
 
-		if((!is.na(BT))&&(!is.na(BTf))&&(BT > 0)&&(BTf > 0)) BTp <- 1 - pf(BT, BTf, 100000)
+		if((!is.na(BT))&&(!is.na(BTf))&&(BT > 0)&&(BTf > 0)) BTp <- pf(BT, BTf, Inf, lower.tail=FALSE)
 		else BTp <- NA
 
 		TVAB <- BtAB%*%V
@@ -619,7 +623,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BAB <- (N/fn.tr(TVAB)) * ((t(RTE.B)) %*% BtAB %*% (RTE.B))
 		BABf <- ((fn.tr(BtAB%*%V))^2)/(fn.tr(BtAB%*%V%*%BtAB%*%V))
 
-		if((!is.na(BAB))&&(!is.na(BABf))&&(BAB > 0)&&(BABf > 0)) BABp <- 1 - pf(BAB, BABf, 100000)
+		if((!is.na(BAB))&&(!is.na(BABf))&&(BAB > 0)&&(BABf > 0)) BABp <- pf(BAB, BABf, Inf, lower.tail=FALSE)
 		else BABp <- NA
 
 		TVAT <- BtAT%*%V
@@ -627,7 +631,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BAT <- (N/fn.tr(TVAT)) * ((t(RTE.B)) %*% BtAT %*% (RTE.B))
 		BATf <- ((fn.tr(BtAT%*%V))^2)/(fn.tr(BtAT%*%V%*%BtAT%*%V))
 
-		if((!is.na(BAT))&&(!is.na(BATf))&&(BAT > 0)&&(BATf > 0)) BATp <- 1 - pf(BAT, BATf, 100000)
+		if((!is.na(BAT))&&(!is.na(BATf))&&(BAT > 0)&&(BATf > 0)) BATp <- pf(BAT, BATf, Inf, lower.tail=FALSE)
 		else BATp <- NA
 
 		TVBT <- BtBT%*%V
@@ -635,7 +639,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BBT <- (N/fn.tr(TVBT)) * ((t(RTE.B)) %*% BtBT %*% (RTE.B))
 		BBTf <- ((fn.tr(BtBT%*%V))^2)/(fn.tr(BtBT%*%V%*%BtBT%*%V))
 
-		if((!is.na(BBT))&&(!is.na(BBTf))&&(BBT > 0)&&(BBTf > 0)) BBTp <- 1 - pf(BBT, BBTf, 100000)
+		if((!is.na(BBT))&&(!is.na(BBTf))&&(BBT > 0)&&(BBTf > 0)) BBTp <- pf(BBT, BBTf, Inf, lower.tail=FALSE)
 		else BBTp <- NA
 
 		TVABT <- BtABT%*%V
@@ -643,7 +647,7 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		BABT <- (N/fn.tr(TVABT)) * ((t(RTE.B)) %*% BtABT %*% (RTE.B))
 		BABTf <- ((fn.tr(BtABT%*%V))^2)/(fn.tr(BtABT%*%V%*%BtABT%*%V))
 
-		if((!is.na(BABT))&&(!is.na(BABTf))&&(BABT > 0)&&(BABTf > 0)) BABTp <- 1 - pf(BABT, BABTf, 100000)
+		if((!is.na(BABT))&&(!is.na(BABTf))&&(BABT > 0)&&(BABTf > 0)) BABTp <- pf(BABT, BABTf, Inf, lower.tail=FALSE)
 		else BABTp <- NA
 
 		QB <- rbind(BA, BB, BT, BAB, BAT, BBT, BABT)
@@ -683,13 +687,13 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		b2.dAB %*% b2.sd %*% b2.sd %*% b2.lamda)
 
 
-		if((!is.na(BA))&&(!is.na(BAf))&&(BA > 0)&&(BAf > 0)&&(b2.df1 > 0)) B2.Ap <- 1 - pf(BA, BAf, b2.df1)
+		if((!is.na(BA))&&(!is.na(BAf))&&(BA > 0)&&(BAf > 0)&&(b2.df1 > 0)) B2.Ap <- pf(BA, BAf, b2.df1, lower.tail=FALSE)
 		else BAp <- NA
 
-		if((!is.na(BB))&&(!is.na(BBf))&&(BB > 0)&&(BBf > 0)&&(b2.df2 > 0)) B2.Bp <- 1 - pf(BB, BBf, b2.df2)
+		if((!is.na(BB))&&(!is.na(BBf))&&(BB > 0)&&(BBf > 0)&&(b2.df2 > 0)) B2.Bp <- pf(BB, BBf, b2.df2, lower.tail=FALSE)
 		else BBp <- NA
 
-		if((!is.na(BAB))&&(!is.na(BABf))&&(BAB > 0)&&(BABf > 0)&&(b2.df3 > 0)) B2.ABp <- 1 - pf(BAB, BABf, b2.df3)
+		if((!is.na(BAB))&&(!is.na(BABf))&&(BAB > 0)&&(BABf > 0)&&(b2.df3 > 0)) B2.ABp <- pf(BAB, BABf, b2.df3, lower.tail=FALSE)
 		else BABp <- NA
 
 		### Box type modified Statistics calculation
@@ -716,60 +720,53 @@ time.order=NULL, group1.order=NULL, group2.order=NULL, plot.RTE=TRUE, show.covar
 		if(SING.COV) cat(" The covariance matrix is singular. \n\n")
 	}
 
+     if (plot.RTE == TRUE) {
+        id.rte <- A + T + B + A * T + B * T + A * B
+        plot.rte <- rd.PRes1[, 3][(id.rte + 1):(id.rte + A * 
+            B * T)]
+        frank.group1 <- rep(0, 0)
+        frank.group2 <- rep(0, 0)
+        frank.time <- rep(0, 0)
+        for (i in 1:A) {
+            for (j in 1:B) {
+                for (k in 1:T) {
+                  frank.group1 <- c(frank.group1, paste(origg1level[i]))
+                  frank.group2 <- c(frank.group2, paste(origg2level[j]))
+                  frank.time <- c(frank.time, paste(origtlevel[k]))
+                }
+            }
+        }
+        Frank <- data.frame(Group1 = frank.group1, Time = frank.time, 
+            Group2 = frank.group2, RTE = plot.rte)
+        plot.samples <- split(Frank, Frank$Group1)
+        lev.G1 <- levels(factor(plot.samples[[1]]$Group1))
+        lev.G2 <- levels(factor(plot.samples[[1]]$Group2))
+        lev.T <- levels(factor(Frank$Time))
+        par(mfrow = c(1, A))
+        for (hh in 1:A) {
+            id.g <- which(names(plot.samples) == origg1level[hh])
+            plot(1:T, plot.samples[[id.g]]$RTE[1:T], pch = 10, 
+                type = "b", ylim = c(0, 1.1), xaxt = "n", xlab = "", 
+                ylab = "", cex.lab = 1.5, xlim = c(0, T + 1), 
+                lwd = 3)
+            title(main = paste(group1.name, origg1level[hh]), 
+                xlab = paste(time.name))
+            for (s in 1:B) {
+                points(1:T, plot.samples[[id.g]]$RTE[plot.samples[[hh]]$Group2 == 
+                  lev.G2[s]], col = s, type = "b", lwd = 3)
+            }
+            axis(1, at = 1:T, labels = origtlevel)
+            legend("top", col = c(1:B), paste(group2.name, lev.G2), 
+                pch = c(rep(10, B)), lwd = c(rep(3, B)))
+        }
+    }
 
-	if (plot.RTE==TRUE)
-	{
-		id.rte<-A+T+B+A*T+B*T+A*B
-		plot.rte <- rd.PRes1[,3][(id.rte+1):(id.rte+A*B*T)]
-		
-		
-		frank.group1 <- rep(0,0)
-		frank.group2<-rep(0,0)
-		frank.time<-rep(0,0)
-		
-		
-		for(i in 1:A)
-		{
-			for(j in 1:B) 
-			{
-				for(k in 1:T) 
-				{
-					frank.group1 <- c(frank.group1, paste(origg1level[i]))
-					frank.group2 <-c(frank.group2, paste(origg2level[j]))
-					frank.time <- c(frank.time, paste(origtlevel[k]))
-				} 
-			} 
-		}
-		
-		Frank<-data.frame(Group1 =frank.group1, Time = frank.time, Group2 = frank.group2, RTE =plot.rte)
-		plot.samples <- split(Frank, Frank$Group1)
+        if (show.covariance == FALSE) {
+        V <- NULL
+    }
 
-		lev.G1 <- levels(factor(plot.samples[[1]]$Group1))
-		lev.G2 <- levels(factor(plot.samples[[1]]$Group2))
-		lev.T <- levels(factor(Frank$Time))
-		
-		par(mfrow=c(1,A))
-		for (hh in 1:A)
-		{
-			id.g<-which(names(plot.samples)==origg1level[hh])
-			plot(1:T, plot.samples[[id.g]]$RTE[1:T],pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,xlim=c(0,T+1),lwd=3)
-			title(main=paste(group1.name, origg1level[hh]), xlab=paste(time.name))
-			for (s in 1:B)
-			{
-				points(1:T,plot.samples[[id.g]]$RTE[plot.samples[[hh]]$Group2==lev.G2[s]],col=s,type="b",lwd=3 )
-			}
-			axis(1,at=1:T,labels=origtlevel)
-			legend("top", col=c(1:B),paste(group2.name,lev.G2),pch=c(rep(10,B)),lwd=c(rep(3,B)) )
-
-		}
-	}
-
-	if(show.covariance==FALSE)
-	{
-  		V<-NULL
-	}
-
-        out.f2.ld.f1 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType, ANOVA.test=rd.BoxType, ANOVA.test.mod.Box=rd.BoxType2, covariance=V) 
+        out.f2.ld.f1 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType, ANOVA.test=rd.BoxType, ANOVA.test.mod.Box=rd.BoxType2, covariance=V, model.name=model.name) 
         return(out.f2.ld.f1)
 
 }
+

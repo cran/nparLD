@@ -1,0 +1,8 @@
+import(MASS)
+
+export(f1.ld.f1,f1.ld.f2,f2.ld.f1,ld.ci,ld.f1,ld.f2,nparLD,plot.nparLD,
+print.nparLD,summary.nparLD)
+
+S3method(plot,nparLD)
+S3method(print,nparLD)
+S3method(summary,nparLD)

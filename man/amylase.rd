@@ -23,18 +23,16 @@ R. Oldenbourg Verlag, Munchen Wien.
 \examples{
 ## Analysis using LD-F2 design ##
 data(amylase)
-var<-c(amylase[,"m8"],amylase[,"m12"],amylase[,"m17"],amylase[,"m21"],
-amylase[,"t8"],amylase[,"t12"],amylase[,"t17"],amylase[,"t21"])
-time1<-factor(c(rep("M",56),rep("T",56)))
-time2<-c(rep(8,14),rep(12,14),rep(17,14),rep(21,14),
-rep(8,14),rep(12,14),rep(17,14),rep(21,14))
-subject<-c(rep(amylase[,"Proband"],8))
-ex.f2<-ld.f2(var=var,time1=time1,time2=time2,subject=subject,
-time1.name="Day",time2.name="Time",description=FALSE)
+attach(amylase)
+ex.f2<-ld.f2(y=resp, time1=time1, time2=time2, subject=subject,
+time1.name="Day", time2.name="Time", description=FALSE)
+# LD F2 Model 
+# ----------------------- 
 # Check that the order of the time1 and time2 levels are correct.
 # Time1 level:   M T 
 # Time2 level:   8 12 17 21 
-# If the order is not correct, specify the correct order in time1.order or time2.order.
+# If the order is not correct, specify the correct order in time1.order or 
+# time2.order.
 
 ## Wald-type statistic 
 ex.f2$Wald.test
@@ -48,8 +46,8 @@ ex.f2$Wald.test
 ex.f2$ANOVA.test
 
 #          Statistic       df      p-value
-#Day       0.6761043 1.000000 4.109334e-01
-#Time     14.2671950 2.858344 5.883893e-09
-#Day:Time  5.2242782 2.184249 4.151609e-03
+#Day       0.6761043 1.000000 4.109314e-01
+#Time     14.2671950 2.858344 5.860479e-09
+#Day:Time  5.2242782 2.184249 4.150298e-03
 }
 \keyword{datasets}

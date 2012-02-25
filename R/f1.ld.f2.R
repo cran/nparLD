@@ -1,26 +1,25 @@
 # R program for F1_LD_F2 macro
 #
 #   Input:   
-#               var: a vector of variable of interest
+#               y: a vector of variable of interest
 #               group: a vector of group variable
 #               time1: a vector of the time1 variable
 #               time2: a vector of the time2 variable
 #               subject: a vector of independent subjects
-#               time1.name: time1 factor name. Default is set to Treatment
-#               time2.name: time2 factor name. Default is set to Time
-#               group.name: whole plot factor names. Default is set to Group
+#               time1.name: time1 factor name. Default is set to TimeC
+#               time2.name: time2 factor name. Default is set to TimeT
+#               group.name: whole plot factor names. Default is set to GroupA
 #               description: description of the output. Default is set to TRUE (show description)
 #		time1.order: a vector of time1 levels specifying the order.
 #		time2.order: a vector of time2 levels specifying the order.
 #		group.order: a vector of group levels specifying the order.
-#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
-#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, covariance matrix
 #  
-f1.ld.f2 <- function(var, time1, time2, group, subject, time1.name="Treatment",
-time2.name="Time", group.name="Group", description=TRUE, time1.order=NULL,
-time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
+f1.ld.f2 <- function(y, time1, time2, group, subject, time1.name="Time1",
+time2.name="Time2", group.name="Group", description=TRUE, time1.order=NULL,
+time2.order=NULL, group.order=NULL,plot.RTE=TRUE,show.covariance=FALSE,
+order.warning=TRUE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -64,8 +63,9 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 
 #    check whether the input variables are entered correctly
 
+	   var<-y
 	   if(is.null(var)||is.null(time1)||is.null(time2)||is.null(group)||is.null(subject)) 
-		stop("At least one of the input parameters (var, time1, time2, group, or subject) is not found.")
+		stop("At least one of the input parameters (y, time1, time2, group, or subject) is not found.")
 	   
            sublen<-length(subject)
 	   varlen<-length(var)
@@ -74,7 +74,7 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 	   grolen<-length(group)
 	   
 	   if((sublen!=varlen)||(sublen!=tim1len)||(sublen!=tim2len)||(sublen!=grolen))
-		stop("At least one of the input parameters (var, time1, time2, group, or subject) has a different length.")
+		stop("At least one of the input parameters (y, time1, time2, group, or subject) has a different length.")
 
 
 	library(MASS)
@@ -256,63 +256,61 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 		}
 		return(res)
 	}
-
+	
 	Rs <- fn.collapse.time(Rmat, N, C, T)
 	R1s <- fn.collapse.time(Lamdamat, N, C, T)
-
-	fn.fact.manip <- function(fullRmat, n, n.a, n.c, n.t) 
-	{
-		res.list <- list(0)
-		res.A <- matrix(0, nrow = (n/n.a)*n.c*n.t, ncol = n.a)
-		res.AC <- array(0, dim = c(n.a, (n/n.a)*n.t, n.c))
-		res.AT <- array(0, dim = c(n.a, (n/n.a)*n.c, n.t))
-		res.ACT <- array(0, dim = c(n.a, (n/n.a), n.c*n.t))
-		temp.Rmat <- matrix(0, nrow=n/n.a, ncol=n.c*n.t)
 	
-		for(i in 1:n.a) 
-		{
-			temp.Rmat <- fullRmat[(((n/n.a)*(i-1)) + 1) : (((n/n.a)*(i-1)) + (n/n.a)), ]
-			res.A[,i] <- c(temp.Rmat)
-			res.AC[i,,] <- fn.collapse.day(temp.Rmat, n/n.a, n.c, n.t)
-			res.AT[i,,] <- fn.collapse.time(temp.Rmat, n/n.a, n.c, n.t)
-			res.ACT[i,,] <- temp.Rmat
-		}
-
-		res.list[[1]] <- res.A
-		res.list[[2]] <- res.AC
-		res.list[[3]] <- res.AT
-		res.list[[4]] <- res.ACT
-
-		return(res.list)
+	n.a.vec<-tapply(factor,factor,length)/CTcount
+	
+	fn.fact.manip <- function(fullRmat, n, n.a.vec, n.c, n.t) 
+	{
+ 	 res.list <- list(0)
+ 	 n.a<-length(n.a.vec)
+ 	 res.A <- list(0)
+ 	 res.AC <- list(0)
+ 	 res.AT <- list(0)
+ 	 res.ACT <- list(0)
+ 	 
+ 	 n.a.start<-c(1,(cumsum(n.a.vec)+1))[-(length(n.a.vec)+1)]
+ 	 n.a.end<-cumsum(n.a.vec)
+	 
+	 for(i in 1:n.a) 
+	 {
+	  n.a.len<-n.a.vec[i]
+	  temp.Rmat <- fullRmat[((n.a.start[i]):(n.a.end[i])), ]
+	  res.A[[i]] <- c(temp.Rmat)
+	  res.AC[[i]] <- fn.collapse.day(temp.Rmat, n.a.len, n.c, n.t)
+	  res.AT[[i]] <- fn.collapse.time(temp.Rmat, n.a.len, n.c, n.t)
+	  res.ACT[[i]] <- temp.Rmat
+	 }
+	 
+	 res.list[[1]] <- res.A
+	 res.list[[2]] <- res.AC
+	 res.list[[3]] <- res.AT
+	 res.list[[4]] <- res.ACT
+	 return(res.list)
 	}
 
-	Ra.list <- fn.fact.manip(Rmat, N, A, C, T)
-	R1a.list <- fn.fact.manip(Lamdamat, N, A, C, T)
+	Ra.list <- fn.fact.manip(Rmat, N, n.a.vec, C, T)
+	R1a.list <- fn.fact.manip(Lamdamat, N, n.a.vec, C, T)
 
-	RMeans[1 : A] <- (apply(Ra.list[[1]], 2, sum) / apply(R1a.list[[1]], 2, sum))
+	RMeans[1 : A] <- unlist(lapply(Ra.list[[1]], sum)) / unlist(lapply(R1a.list[[1]], sum))
+
 	RMeans[(A + 1) : (A + C)] <- (apply(Rr, 2, sum) / apply(R1r, 2, sum))
 	RMeans[(A + C + 1) : (A + C + T)] <- (apply(Rs, 2, sum) / apply(R1s, 2, sum))
 
-	for(i in 1:A) 
-	{
-		RMeans[(A + C + T + (i-1)*C + 1) : (A + C + T + (i-1)*C + C)] <- 
-		(apply(Ra.list[[2]][i,,], 2, sum) / apply(R1a.list[[2]][i,,], 2, sum))
-	}
+	RMeans[(A + C + T + 1) : (A + C + T + C*A)] <- 
+	unlist(lapply(Ra.list[[2]],apply,MARGIN=2,sum)) / unlist(lapply(R1a.list[[2]],apply,MARGIN=2,sum))
+
 
 	RMeans[(A + C + T + C*A + 1) : (A + C + T + C*A + C*T)] <- 
 	(apply(Rmat, 2, sum) / apply(Lamdamat, 2, sum))
 
-	for(i in 1:A) 
-	{
-		RMeans[(A + C + T + C*A + C*T + (i-1)*T + 1) : (A + C + T + C*A + C*T + (i-1)*T + T)] <- 
-		(apply(Ra.list[[3]][i,,], 2, sum) / apply(R1a.list[[3]][i,,], 2, sum))
-	}
+	RMeans[(A + C + T + C*A + C*T + 1) : (A + C + T + C*A + C*T + T*A)] <- 
+	unlist(lapply(Ra.list[[3]],apply,MARGIN=2,sum)) / unlist(lapply(R1a.list[[3]],apply,MARGIN=2,sum))
 
-	for(i in 1:A) 
-	{
-		RMeans[(A + C + T + C*A + C*T + T*A + (i-1)*C*T + 1) : (A + C + T + C*A + C*T + T*A + (i-
-		1)*C*T + C*T)] <- (apply(Ra.list[[4]][i,,], 2, sum) / apply(R1a.list[[4]][i,,], 2, sum))
-	}
+	RMeans[(A + C + T + C*A + C*T + T*A + 1) : (A + C + T + C*A + C*T + T*A + A*C*T)] <- 
+	unlist(lapply(Ra.list[[4]],apply,MARGIN=2,sum)) / unlist(lapply(R1a.list[[4]],apply,MARGIN=2,sum))
 
 	RTE <- (RMeans - 0.5) / NN 
 
@@ -349,38 +347,28 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 	SOURCE <- fn.nice.out(A, C, T)
 
 	Nobs <- rep(0, (A + C + T + (A*C) + (C*T) + (T*A) + (A*C*T)))
-	Nobs[1 : A] <- (apply(R1a.list[[1]], 2, sum))
+	Nobs[1 : A] <- unlist(lapply(R1a.list[[1]], sum))
 	Nobs[(A + 1) : (A + C)] <- (apply(R1r, 2, sum))
 	Nobs[(A + C + 1) : (A + C + T)] <- (apply(R1s, 2, sum))
 
-	for(i in 1:A) 
-	{
-		Nobs[(A + C + T + (i-1)*C + 1) : (A + C + T + (i-1)*C + C)] <- 
-		(apply(R1a.list[[2]][i,,], 2, sum))
-	}
+	Nobs[(A + C + T + 1) : (A + C + T + C*A)] <- 
+	unlist(lapply(R1a.list[[2]],apply,MARGIN=2,sum))
 
 	Nobs[(A + C + T + C*A + 1) : (A + C + T + C*A + C*T)] <- (apply(Lamdamat, 2, sum))
 
-	for(i in 1:A) 
-	{
-		Nobs[(A + C + T + C*A + C*T + (i-1)*T + 1) : (A + C + T + C*A + C*T + (i- 1)*T + T)] <- 
-		(apply(R1a.list[[3]][i,,], 2, sum))
-	}
+	Nobs[(A + C + T + C*A + C*T + 1) : (A + C + T + C*A + C*T + T*A)] <- 
+	unlist(lapply(R1a.list[[3]],apply,MARGIN=2,sum))
 
-	for(i in 1:A) 
-	{
-		Nobs[(A + C + T + C*A + C*T + T*A + (i-1)*C*T + 1) : (A + C + T + C*A + C*T + T*A + 
-		(i-1)*C*T + C*T)] <- (apply(R1a.list[[4]][i,,], 2, sum))
-	}
+	Nobs[(A + C + T + C*A + C*T + T*A + 1) : (A + C + T + C*A + C*T + T*A + A*C*T)] <- 
+	unlist(lapply(R1a.list[[4]],apply,MARGIN=2,sum))
 
 	PRes1 <- data.frame(RankMeans=RMeans, Nobs, RTE) 
 	rd.PRes1 <- round(PRes1, Inf)
 	rownames(rd.PRes1)<-SOURCE
 
+	   model.name<-"F1 LD F2 Model"
      	if(description==TRUE)
      	{
-           cat(" F1 LD F2 Model ") 
-           cat("\n ----------------------- ")
 	   cat("\n Total number of observations : ", NN)
 	   cat("\n Total Number of subjects ", N)
 	   cat("\n Total Number of missing observations : ", (N*CTcount - NN), "\n")
@@ -396,14 +384,21 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
            cat(" RTE = Relative treatment effect\n")
            cat(" Wald.test = Wald-type test statistic\n")
            cat(" ANOVA.test = ANOVA-type test statistic\n")
+           cat(" ANOVA.test.mod.Box = modified ANOVA-type test statistic with Box approximation\n")
            cat(" covariance = Covariance matrix","\n")
            cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       	}
+
+	if(order.warning==TRUE)
+	{
+           cat(" F1 LD F2 Model ") 
+           cat("\n ----------------------- \n")
            cat(" Check that the order of the time1, time2, and group levels are correct.\n") 
            cat(" Time1 level:  " , paste(origsort1),"\n")
            cat(" Time2 level:  " , paste(origsort2),"\n")
            cat(" Group level:  " , paste(origsortg),"\n")
            cat(" If the order is not correct, specify the correct order in time1.order, time2.order, or group.order.\n\n")
+	}
 
 	fn.P.mat <- function(arg1) 
 	{
@@ -429,29 +424,31 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 	CAT <- kronecker(PA, kronecker(C1, PT))
 	CACT <- kronecker(PA, kronecker(PC, PT))
 
-	fn.covr<-function(N,d,NN,Ni,Rmat,DatRMeans,Lamdamat, A, C, T)
+	fn.covr<-function(N,d,NN,Rmat,DatRMeans,Lamdamat, n.a.vec, C, T)
 	{
 		V<-matrix(0,d,d);
-		temp.mat <- matrix(0, N/A, N/A);
+ 	 	n.a.start<-c(1,(cumsum(n.a.vec)+1))[-(length(n.a.vec)+1)]
+ 	 	n.a.end<-cumsum(n.a.vec)
+		
 		fn.covr.block.mats <- function(N,d,NN,Ni,Rmat,DatRMeans,Lamdamat) 
 		{
-			V<-matrix(0,d,d);
+			V<-matrix(0,d,d)
 			for(s in 1:d) 
 			{
 	   			for(sdash in 1:d) 
 				{
 	      				if(s==sdash) 
 					{	    
-		    				temp<-(Rmat[,s]-DatRMeans[s])*(Rmat[,s]-DatRMeans[s]); 	
-		    				V[s,sdash]<-V[s,sdash]+N*(Lamdamat[,s]%*%temp)/(NN^2*Ni[s]*(Ni[s]-1));
+		    				temp<-(Rmat[,s]-DatRMeans[s])*(Rmat[,s]-DatRMeans[s])
+		    				V[s,sdash]<-V[s,sdash]+N*(Lamdamat[,s]%*%temp)/(NN^2*Ni[s]*(Ni[s]-1))
 					}
 	
 	      				if(s!=sdash)
 	       				{
-		   				temp<-(Rmat[,s]-DatRMeans[s])*(Rmat[,sdash]-DatRMeans[sdash]);
-		   				temp1<-Lamdamat[,s]*Lamdamat[,sdash];
-		   				ks<-(Ni[s]-1)*(Ni[sdash]-1)+Lamdamat[,s]%*%Lamdamat[,sdash]-1;
-		   				V[s,sdash]<-V[s,sdash]+N*(temp1%*%temp)/(NN^2*ks);
+		   				temp<-(Rmat[,s]-DatRMeans[s])*(Rmat[,sdash]-DatRMeans[sdash])
+		   				temp1<-Lamdamat[,s]*Lamdamat[,sdash]
+		   				ks<-(Ni[s]-1)*(Ni[sdash]-1)+Lamdamat[,s]%*%Lamdamat[,sdash]-1
+		   				V[s,sdash]<-V[s,sdash]+N*(temp1%*%temp)/(NN^2*ks)
 	       				} 	
 	   			}
 			}
@@ -460,16 +457,16 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 		}
 
 
-		for(i in 1:A) 
+		for(i in 1:(length(n.a.vec))) 
 		{
 
-			Ni <- apply(Lamdamat[(((i-1)*(N/A) + 1) : ((i-1)*(N/A) + (N/A))), (1: (C*T))], 2, sum)
-			temp.mat <- fn.covr.block.mats(N/A, C*T, NN, Ni, Rmat[(((i-1)*(N/A) + 1) : 
-			((i-1)*(N/A) + (N/A))), (1: (C*T))],  DatRMeans[(((i-1)*(C*T) + 1) : ((i-1)*
-			(C*T) + C*T))], Lamdamat[(((i-1)*(N/A) + 1) : ((i-1)*(N/A) + (N/A))), (1: (C*T))])
+			Ni <- apply(Lamdamat[((n.a.start[i]):(n.a.end[i])), (1: (C*T))], 2, sum)
+			temp.mat <- fn.covr.block.mats((n.a.vec[i]), C*T, NN, Ni, Rmat[((n.a.start[i]):(n.a.end[i])), 
+			(1: (C*T))],  DatRMeans[(((i-1)*(C*T) + 1) : ((i-1)*
+			(C*T) + C*T))], Lamdamat[((n.a.start[i]):(n.a.end[i])), (1: (C*T))])
 
 			V[(((i-1)*(C*T) + 1) : ((i-1)*(C*T) + C*T)), (((i-1)*(C*T) + 1) : ((i-1)*
-			(C*T) + C*T))]  <-  A*temp.mat
+			(C*T) + C*T))]  <-  (sum(n.a.vec)/(n.a.vec[i]))*temp.mat
 		}
 
 		return(V);
@@ -477,8 +474,8 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 	}
 
 
-	V <- fn.covr(N, A*C*T, NN, Ni, Rmat, RMeans[(A + C + T + C*A + C*T + T*A + 1) : 
-	(A + C + T + C*A + C*T + T*A + A*C*T)],  Lamdamat, A, C, T)
+	V <- fn.covr(N, A*C*T, NN, Rmat, RMeans[(A + C + T + C*A + C*T + T*A + 1) : 
+	(A + C + T + C*A + C*T + T*A + A*C*T)],  Lamdamat, n.a.vec, C, T)
 
 	SING.COV <- FALSE
 	if(qr(V)$rank < (A*C*T)) SING.COV <- TRUE
@@ -506,19 +503,19 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 		dfWAT <- qr(CAT%*%V%*%t(CAT))$rank	
 		dfWACT <- qr(CACT%*%V%*%t(CACT))$rank
 
-		if(!is.na(WA) && WA > 0) pWA <- 1 - pchisq(WA, dfWA)
+		if(!is.na(WA) && WA > 0) pWA <- pchisq(WA, dfWA,lower.tail=FALSE)
 		else pWA <- NA
-		if(!is.na(WC) && WC > 0) pWC <- 1 - pchisq(WC, dfWC)
+		if(!is.na(WC) && WC > 0) pWC <- pchisq(WC, dfWC,lower.tail=FALSE)
 		else pWC <- NA
-		if(!is.na(WT) && WT > 0) pWT <- 1 - pchisq(WT, dfWT)
+		if(!is.na(WT) && WT > 0) pWT <- pchisq(WT, dfWT,lower.tail=FALSE)
 		else pWT <- NA
-		if(!is.na(WAC) && WAC > 0) pWAC <- 1 - pchisq(WAC, dfWAC)
+		if(!is.na(WAC) && WAC > 0) pWAC <- pchisq(WAC, dfWAC,lower.tail=FALSE)
 		else pWAC <- NA
-		if(!is.na(WCT) && WCT > 0) pWCT <- 1 - pchisq(WCT, dfWCT)
+		if(!is.na(WCT) && WCT > 0) pWCT <- pchisq(WCT, dfWCT,lower.tail=FALSE)
 		else pWCT <- NA
-		if(!is.na(WAT) && WAT > 0) pWAT <- 1 - pchisq(WAT, dfWAT)
+		if(!is.na(WAT) && WAT > 0) pWAT <- pchisq(WAT, dfWAT,lower.tail=FALSE)
 		else pWAT <- NA
-		if(!is.na(WACT) && WACT > 0) pWACT <- 1 - pchisq(WACT, dfWACT)
+		if(!is.na(WACT) && WACT > 0) pWACT <- pchisq(WACT, dfWACT,lower.tail=FALSE)
 		else pWACT <- NA
 
 		W <- rbind(WA, WC, WT, WAC, WCT, WAT, WACT)
@@ -538,6 +535,8 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 			return(sum(diag(mat)))
 		}
 
+		
+
 		RTE.B <- RTE[(A + C + T + C*A + C*T + T*A + 1) : (A + C + T + C*A + C*T + T*A + A*C*T)]
 
 		### Box type statistics computed here
@@ -553,43 +552,55 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 		TVA <- BtA%*%V
 		BA <- (N/fn.tr(TVA)) * ((t(RTE.B)) %*% BtA %*% (RTE.B))
 		BAf <- ((fn.tr(BtA%*%V))^2)/(fn.tr(BtA%*%V%*%BtA%*%V))
-		if((!is.na(BA))&&(!is.na(BAf))&&(BA > 0)&&(BAf > 0)) BAp <- 1 - pf(BA, BAf, 100000)
+		dpr <- PA*diag(A)
+		mat <- kronecker(diag(A), (1/(C*T))*t(matrix(1,(C*T),1)))
+		va <- mat%*%V%*%t(mat)
+		lambda <- solve(diag(n.a.vec) - diag(A))
+		tem1 <- (fn.tr(dpr%*%va))^2
+		tem2 <- fn.tr(dpr%*%dpr%*%va%*%va%*%lambda)
+		BAf2 <- tem1/tem2
+
+		if((!is.na(BA))&&(!is.na(BAf))&&(!is.na(BAf2))&&(BA > 0)&&(BAf > 0)) 
+		{
+   		 BAp <- pf(BA, BAf,Inf,lower.tail=FALSE)
+   		 BApmod <- pf(BA, BAf,BAf2,lower.tail=FALSE)
+		}
 		else BAp <- NA
 
 		TVC <- BtC%*%V
 		BC <- (N/fn.tr(TVC)) * ((t(RTE.B)) %*% BtC %*% (RTE.B))
 		BCf <- ((fn.tr(BtC%*%V))^2)/(fn.tr(BtC%*%V%*%BtC%*%V))
-		if((!is.na(BC))&&(!is.na(BCf))&&(BC > 0)&&(BCf > 0)) BCp <- 1 - pf(BC, BCf, 100000)
+		if((!is.na(BC))&&(!is.na(BCf))&&(BC > 0)&&(BCf > 0)) BCp <- pf(BC, BCf, Inf,lower.tail=FALSE)
 		else BCp <- NA
 
 		TVT <- BtT%*%V
 		BT <- (N/fn.tr(TVT)) * ((t(RTE.B)) %*% BtT %*% (RTE.B))
 		BTf <- ((fn.tr(BtT%*%V))^2)/(fn.tr(BtT%*%V%*%BtT%*%V))
-		if((!is.na(BT))&&(!is.na(BTf))&&(BT > 0)&&(BTf > 0)) BTp <- 1 - pf(BT, BTf, 100000)
+		if((!is.na(BT))&&(!is.na(BTf))&&(BT > 0)&&(BTf > 0)) BTp <- pf(BT, BTf, Inf,lower.tail=FALSE)
 		else BTp <- NA
 
 		TVAC <- BtAC%*%V
 		BAC <- (N/fn.tr(TVAC)) * ((t(RTE.B)) %*% BtAC %*% (RTE.B))
 		BACf <- ((fn.tr(BtAC%*%V))^2)/(fn.tr(BtAC%*%V%*%BtAC%*%V))
-		if((!is.na(BAC))&&(!is.na(BACf))&&(BAC > 0)&&(BACf > 0)) BACp <- 1 - pf(BAC, BACf, 100000)
+		if((!is.na(BAC))&&(!is.na(BACf))&&(BAC > 0)&&(BACf > 0)) BACp <- pf(BAC, BACf, Inf,lower.tail=FALSE)
 		else BACp <- NA
 
 		TVCT <- BtCT%*%V
 		BCT <- (N/fn.tr(TVCT)) * ((t(RTE.B)) %*% BtCT %*% (RTE.B))
 		BCTf <- ((fn.tr(BtCT%*%V))^2)/(fn.tr(BtCT%*%V%*%BtCT%*%V))
-		if((!is.na(BCT))&&(!is.na(BCTf))&&(BCT > 0)&&(BCTf > 0)) BCTp <- 1 - pf(BCT, BCTf, 100000)
+		if((!is.na(BCT))&&(!is.na(BCTf))&&(BCT > 0)&&(BCTf > 0)) BCTp <- pf(BCT, BCTf, Inf,lower.tail=FALSE)
 		else BCTp <- NA
 
 		TVAT <- BtAT%*%V
 		BAT <- (N/fn.tr(TVAT)) * ((t(RTE.B)) %*% BtAT %*% (RTE.B))
 		BATf <- ((fn.tr(BtAT%*%V))^2)/(fn.tr(BtAT%*%V%*%BtAT%*%V))
-		if((!is.na(BAT))&&(!is.na(BATf))&&(BAT > 0)&&(BATf > 0)) BATp <- 1 - pf(BAT, BATf, 100000)
+		if((!is.na(BAT))&&(!is.na(BATf))&&(BAT > 0)&&(BATf > 0)) BATp <- pf(BAT, BATf, Inf,lower.tail=FALSE)
 		else BATp <- NA
 
 		TVACT <- BtACT%*%V
 		BACT <- (N/fn.tr(TVACT)) * ((t(RTE.B)) %*% BtACT %*% (RTE.B))
 		BACTf <- ((fn.tr(BtACT%*%V))^2)/(fn.tr(BtACT%*%V%*%BtACT%*%V))
-		if((!is.na(BACT))&&(!is.na(BACTf))&&(BACT > 0)&&(BACTf > 0)) BACTp <- 1 - pf(BACT, BACTf, 100000)
+		if((!is.na(BACT))&&(!is.na(BACTf))&&(BACT > 0)&&(BACTf > 0)) BACTp <- pf(BACT, BACTf, Inf,lower.tail=FALSE)
 		else BACTp <- NA
 
 
@@ -604,6 +615,11 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 		paste(factor.name, ":", time1.name, ":", time2.name, sep=""))
 		colnames(rd.BoxType) <- c("Statistic", "df", "p-value")
 		rownames(rd.BoxType) <- Bdesc
+
+		BoxTypeMod <- cbind(BA, BAf, BAf2, BApmod)
+		rd.BoxTypeMod <- round(BoxTypeMod, Inf)
+		colnames(rd.BoxTypeMod) <- c("Statistic", "df1", "df2", "p-value")
+		rownames(rd.BoxTypeMod) <- factor.name
 	}
 
 	if(SING.COV) 
@@ -613,60 +629,57 @@ time2.order=NULL, group.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
 	}
 
 	if(!((C > 1) && (T > 1))) cat("Wald-type and Anova-type statistics cannot be computed, since either C or T is 1")
+   if (show.covariance == FALSE) {
+        V <- NULL
+    }
 
-	if(show.covariance==FALSE)
-	{
-  		V<-NULL
-	}
+	out.f1.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType,ANOVA.test.mod.Box=rd.BoxTypeMod,covariance=V,model.name=model.name) 
 
-	out.f1.ld.f2 <- list(RTE=rd.PRes1,Wald.test=rd.WaldType,ANOVA.test=rd.BoxType, covariance=V) 
 
-	if (plot.RTE==TRUE)
-	{
-		id.rte<-A+T+C+A*T+C*T+A*C
-		plot.rte <- rd.PRes1[,3][(id.rte+1):(id.rte+A*C*T)]
+   if (plot.RTE == TRUE) {
+        id.rte <- A + T + C + A * T + C * T + A * C
+        plot.rte <- rd.PRes1[, 3][(id.rte + 1):(id.rte + A * 
+            C * T)]
+        frank.group <- rep(0, 0)
+        frank.time1 <- rep(0, 0)
+        frank.time2 <- rep(0, 0)
+        for (i in 1:A) {
+            for (j in 1:C) {
+                for (k in 1:T) {
+                  frank.group <- c(frank.group, paste(levs[i]))
+                  frank.time1 <- c(frank.time1, paste(origsort1[j]))
+                  frank.time2 <- c(frank.time2, paste(origsort2[k]))
+                }
+            }
+        }
+        Frank <- data.frame(Group = frank.group, Time1 = frank.time1, 
+            Time2 = frank.time2, RTE = plot.rte)
+        plot.samples <- split(Frank, Frank$Group)
+        lev.T1 <- levels(factor(plot.samples[[1]]$Time1))
+        lev.T2 <- levels(factor(plot.samples[[1]]$Time2))
+        lev.F <- levels(factor(Frank$Group))
+        par(mfrow = c(1, A))
+        for (hh in 1:A) {
+            id.g <- which(names(plot.samples) == origsortg[hh])
+            plot(1:T, plot.samples[[id.g]]$RTE[1:T], pch = 10, 
+                type = "b", ylim = c(0, 1.1), xaxt = "n", xlab = "", 
+                ylab = "", cex.lab = 1.5, xlim = c(0, T + 1), 
+                lwd = 3)
+            title(main = paste(group.name, origsortg[hh]), xlab = paste(time2.name))
+            for (s in 1:C) {
+                points(1:T, plot.samples[[id.g]]$RTE[plot.samples[[hh]]$Time1 == 
+                  lev.T1[s]], col = s, type = "b", lwd = 3)
+            }
+            axis(1, at = 1:T, labels = origsort2)
+            legend("top", col = c(1:C), paste(time1.name, lev.T1), 
+                pch = c(rep(10, C)), lwd = c(rep(3, C)))
+        }
+    }
+
 	
-		frank.group <- rep(0,0)
-		frank.time1<-rep(0,0)
-		frank.time2<-rep(0,0)
-	
-		
-		for(i in 1:A)
-		{
-			for(j in 1:C) 
-			{
-				for(k in 1:T) 
-				{
-					frank.group <- c(frank.group, paste(levs[i]))
-					frank.time1 <-c(frank.time1, paste(origsort1[j]))
-					frank.time2 <- c(frank.time2, paste(origsort2[k]))
-				}
-			}
-		}
-		
-		Frank<-data.frame(Group =frank.group, Time1 = frank.time1, Time2 = frank.time2, RTE =plot.rte)
-		plot.samples <- split(Frank, Frank$Group)
 
-		lev.T1 <- levels(factor(plot.samples[[1]]$Time1))
-		lev.T2 <- levels(factor(plot.samples[[1]]$Time2))
-		lev.F <- levels(factor(Frank$Group))
 
-		par(mfrow=c(1,A))
-		for (hh in 1:A)
-		{
-			id.g<-which(names(plot.samples)==origsortg[hh])
-			plot(1:T, plot.samples[[id.g]]$RTE[1:T],pch=10, type="b",ylim=c(0,1.1),xaxt="n", xlab="",ylab="",cex.lab=1.5,xlim=c(0,T+1),lwd=3)
-			title(main=paste(group.name, origsortg[hh]), xlab=paste(time2.name))
-		
-			for (s in 1:C)
-			{
-				points(1:T,plot.samples[[id.g]]$RTE[plot.samples[[hh]]$Time1==lev.T1[s]],col=s,type="b",lwd=3 )
-			}
-		axis(1,at=1:T,labels=origsort2)
-		legend("top", col=c(1:C),paste(time1.name,lev.T1),pch=c(rep(10,C)),lwd=c(rep(3,C)) )
 
-		}
-	}
 
 	return(out.f1.ld.f2)
 }

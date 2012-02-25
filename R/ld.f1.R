@@ -1,7 +1,7 @@
 # R program for LD_F1 macro
 #
 #   Input:   
-#               var: a vector of variable of interest
+#               y: a vector of variable of interest
 #               time: a vector of time variable
 #               subject: a vector of independent subjects
 #   Optional Input:
@@ -9,12 +9,11 @@
 #		time.name: name of the time vector. "Time" is set as default.
 #               description: description of the output. Default is set to TRUE (show description)
 #		time.order: a vector of time levels specifying the order.
-#		plot.RTE: decides whether to show plot of RTE or not. Default is set to TRUE
-#		show.covariance: decides whether to show covariance or not. Default is set to FALSE
 #   Output:
 #             list of relative treatment effects, test results, pattern results, covariance matrix
 #  
-ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.order=NULL, plot.RTE=TRUE, show.covariance=FALSE)
+ld.f1 <- function(y, time, subject, w.pat=NULL, time.name="Time", description=TRUE, time.order=NULL,plot.RTE=TRUE,
+show.covariance=FALSE, order.warning=TRUE)
 {
 #        For model description see Brunner et al. (2002)
 #    
@@ -60,15 +59,16 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
 
 #    check whether the input variables are entered correctly
 
+	   var<-y
 	   if(is.null(var)||is.null(time)||is.null(subject)) 
-		stop("At least one of the input parameters (var, time, or subject) is not found.")
+		stop("At least one of the input parameters (y, time, or subject) is not found.")
 	   
            sublen<-length(subject)
 	   varlen<-length(var)
 	   timlen<-length(time)
 	   
 	   if((sublen!=varlen)||(sublen!=timlen))
-		stop("At least one of the input parameters (var, time, or subject) has a different length.")
+		stop("At least one of the input parameters (y, time, or subject) has a different length.")
 
 #    initialize parameters
 
@@ -145,10 +145,10 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
 
 #    Output for the description of the model and tests
 
+	   model.name<-"LD F1 Model"
+
      if(description==TRUE)
      {
-           cat(" LD F1 Model ") 
-           cat("\n ----------------------- \n")
            cat(" Total number of observations: ",sum(ind),"\n") 
            cat(" Total number of subjects:  " , n,"\n")
            cat(" Total number of missing observations: ",Nmiss,"\n") 
@@ -179,10 +179,15 @@ ld.f1 <- function(var, time, subject, w.pat=NULL, time.name="Time", description=
            cat(" covariance = Covariance matrix","\n")
            cat(" Note: The description output above will disappear by setting description=FALSE in the input. See the help file for details.","\n\n")
       }
+	
+	if(order.warning==TRUE)
+	{
+           cat(" LD F1 Model ") 
+           cat("\n ----------------------- \n")
            cat(" Check that the order of the time level is correct.\n") 
            cat(" Time level:  " , paste(tlevel),"\n")
            cat(" If the order is not correct, specify the correct order in time.order.\n\n")
-
+	}
            
            utime<-tlevel
            ulength<-length(utime)
@@ -253,7 +258,7 @@ covr <- function(mvar, mind, rmean, t){
 	       cp <- C%*%p
 	       Q <- n*t(cp)%*%ginv(CVC)%*%cp 
 	       dfq <- sum(diag(CVC%*%ginv(CVC)))
-	       if((!is.na(Q))&&(!is.na(dfq))&&(Q > 0)&&(dfq > 0)) pvQ <- 1-pchisq(Q, dfq)
+	       if((!is.na(Q))&&(!is.na(dfq))&&(Q > 0)&&(dfq > 0)) pvQ <- pchisq(Q, dfq,lower.tail=FALSE)
 	       else pvQ<-NA
 	       wald.test <- data.frame(Statistic=Q, df=dfq, P.value=pvQ)
 	       colnames(wald.test) <- c("Statistic", "df", "p-value")
@@ -265,7 +270,7 @@ covr <- function(mvar, mind, rmean, t){
 	       dff2 <- n-t+1
                if((!is.na(F))&&(!is.na(dff1))&&(!is.na(dff2))&&(F > 0)&&(dff1 > 0)&&(dff2 > 0)) 
 	       {
-	       	pvF <- 1-pf(F, dff1, dff2)
+	       	pvF <- pf(F, dff1, dff2,lower.tail=FALSE)
 	       	hotelling.test <- data.frame(Statistic=F, df1=dff1, df2=dff2, P.value=pvF)
 	       	colnames(hotelling.test) <- c("Statistic", "df1", "df2", "p-value")
                	rownames(hotelling.test) <- time.name
@@ -275,7 +280,7 @@ covr <- function(mvar, mind, rmean, t){
 	       T <- C%*%ginv(C%*%C)%*%C
 	       f <- (sum(diag(T%*%V)))^2/sum(diag(T%*%V%*%T%*%V))
 	       A <- n*t(p)%*%T%*%p/sum(diag(T%*%V))
-	       if((!is.na(A))&&(!is.na(f))&&(A > 0)&&(f > 0)) pvA <-1-pchisq(A*f, f)
+	       if((!is.na(A))&&(!is.na(f))&&(A > 0)&&(f > 0)) pvA <-pchisq(A*f, f,lower.tail=FALSE)
 	       else pvA <- NA
 	       anova.test <- data.frame(Statistic=A, df=f, P.value=pvA)
 	       colnames(anova.test) <- c("Statistic", "df", "p-value")
@@ -293,8 +298,8 @@ covr <- function(mvar, mind, rmean, t){
                Sn2 <- sum(((apply(junk,1,diff))^2))/(n-1)
                # equation 7.2 
                Tn <- sqrt(n)*(mean.var[2] - mean.var[1])/sqrt(Sn2)
-               pvN <- 2*(1-pnorm(abs(Tn)))
-               pvT <- 2*(1-pt(abs(Tn), (n-1)))
+               pvN <- 2*(pnorm(abs(Tn),lower.tail=FALSE))
+               pvT <- 2*(pt(abs(Tn), (n-1),lower.tail=FALSE))
                two.sample.test <- data.frame(Statistics=Tn, NN=pvN, df=n-1, tt=pvT)
                colnames(two.sample.test) <- c("Statistic", "p-value(N)", "df", "p-value(T)")
                rownames(two.sample.test) <- time.name
@@ -303,8 +308,8 @@ covr <- function(mvar, mind, rmean, t){
                mat.var.rank <- apply(sapply(split(var, time), rank),1,diff)   
                Sn2B <- sum((apply(junk,1,diff) - mat.var.rank)^2)/(n-1)
                TnB <- sqrt(n)*(mean.var[2] - mean.var[1])/(2*sqrt(Sn2B))
-               pvN <- 2*(1-pnorm(abs(TnB)))
-               pvT <- 2*(1-pt(abs(TnB),(n-1)))
+               pvN <- 2*(pnorm(abs(TnB),lower.tail=FALSE))
+               pvT <- 2*(pt(abs(TnB),(n-1),lower.tail=FALSE))
                #out.test <- rbind(out.test, c(TnB,pvN,pvT))
                nn <- c("H_0^F (F1=F2)", "H_0^p (p1=p2)")
                #out.test <- data.frame(out.test, row.names=nn)
@@ -323,8 +328,8 @@ covr <- function(mvar, mind, rmean, t){
                junk <- matrix(w.pat,t,1)
                sigma2 <- t(junk)%*%CVC%*%junk 
                Kn <- round(sqrt(n)*t(junk)%*%cp/sqrt(sigma2),Inf)	
-               pvN <- 1-pnorm(Kn)
-               pvT <- 1-pt(Kn, n-1)
+               pvN <- pnorm(Kn,lower.tail=FALSE)
+               pvT <- pt(Kn, n-1,lower.tail=FALSE)
                pattern.test <- data.frame(Statistics=Kn, NN=pvN, df=n-1, tt=pvT)
                colnames(pattern.test) <- c("Statistic", "p-value(N)", "df","p-value(T)")
                rownames(pattern.test) <- time.name
@@ -338,25 +343,25 @@ covr <- function(mvar, mind, rmean, t){
 		cat("\n Warning(s):\n")
 		cat(" The covariance matrix is singular. \n")
 	    }
-		
-	    if(show.covariance==FALSE)
-	    {
-  		V<-NULL
-	    }
-		
+
+       if (show.covariance == FALSE) {
+        V <- NULL
+    }
+
             ## OUTPUT ##
             out.ld.f1 <- list(RTE=out,Wald.test=wald.test, Hotelling.test=hotelling.test, 
             ANOVA.test=anova.test, two.sample.test=two.sample.test, two.sample.BF.test=two.sample.bf.test, 
-            pattern.test=pattern.test, covariance=V) 
+            pattern.test=pattern.test, covariance=V, model.name=model.name) 
+             if (plot.RTE == TRUE) {
+        kk <- 1:t
+        ptg <- expression(p[i])
+        plot(kk, out[, 3], pch = 10, type = "b", lwd = 2, ylim = c(0, 
+            1), xaxt = "n", xlab = time.name, ylab = ptg, cex.lab = 1.5)
+        axis(1, at = kk, labels = SOURCE)
+        title(main = paste("Relative Effects"))
+    }
 
-	   if (plot.RTE==TRUE)
-	   {
-		kk <- 1:t
-		ptg<-expression(p[i])
-		plot(kk, out[,3], pch=10, type="b",lwd=2,ylim=c(0,1),xaxt="n", xlab=time.name, ylab=ptg,cex.lab=1.5)
-		axis(1,at=kk, labels=SOURCE)
-		#text(1,1.1, ptg, font=3,cex=3)
-		title(main=paste("Relative Effects"))
-	   }
-           return(out.ld.f1)
+
+            return(out.ld.f1)
 }
+

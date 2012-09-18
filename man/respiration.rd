@@ -20,7 +20,13 @@ Wiley, New York.\cr
 Brunner, E. and Langer, F. (1999). \emph{Nichtparametrische Analyse longitudinaler Daten}, 
 R. Oldenbourg Verlag, Munchen Wien.\cr
 
-Koch, G.G., Carr, G.J., Amara, I.A., Stokes, M.E., and Uryniak, T.J. (1990). \emph{Categorical Data Analysis. Statistical Methodology in the Pharmaceutical Sciences}, D. A. Berry ed., pp.389-473.
+Koch, G.G., Carr, G.J., Amara, I.A., Stokes, M.E., and Uryniak, T.J. (1990). 
+\emph{Categorical Data Analysis. Statistical Methodology in the Pharmaceutical Sciences}, D. A. Berry ed., pp.389-473.\cr
+
+Noguchi, K., Gel, Y.R., Brunner, E., and Konietschke, F. (2012). 
+nparLD: An R Software Package for the Nonparametric Analysis of Longitudinal Data in Factorial Experiments. 
+\emph{Journal of Statistical Software}, 50(12), 1-23.
+
 }
 
 \examples{

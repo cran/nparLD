@@ -20,7 +20,12 @@ Brunner, E. and Langer, F. (1999). \emph{Nichtparametrische Analyse longitudinal
 R. Oldenbourg Verlag, Munchen Wien.\cr
 
 Lumley, T. (1996). Generalized estimating equations for ordinal data: A note on working correlation structures. 
-\emph{Biometrics} 52, 354-361. 
+\emph{Biometrics} 52, 354-361.\cr
+
+Noguchi, K., Gel, Y.R., Brunner, E., and Konietschke, F. (2012). 
+nparLD: An R Software Package for the Nonparametric Analysis of Longitudinal Data in Factorial Experiments. 
+\emph{Journal of Statistical Software}, 50(12), 1-23.
+
 }
 
 \examples{

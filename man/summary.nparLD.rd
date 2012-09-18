@@ -45,7 +45,11 @@ Brunner, E., Domhof, S., and Langer, F. (2002). \emph{Nonparametric Analysis of 
 Wiley, New York.\cr
 
 Brunner, E. and Langer, F. (1999). \emph{Nichtparametrische Analyse longitudinaler Daten}, 
-R. Oldenbourg Verlag, Munchen Wien.
+R. Oldenbourg Verlag, Munchen Wien.\cr
+
+Noguchi, K., Gel, Y.R., Brunner, E., and Konietschke, F. (2012). 
+nparLD: An R Software Package for the Nonparametric Analysis of Longitudinal Data in Factorial Experiments. 
+\emph{Journal of Statistical Software}, 50(12), 1-23.
 
 }
 \author{Kimihiro Noguchi, Karthinathan Thangavelu, Frank Konietschke, Yulia Gel, Edgar Brunner}

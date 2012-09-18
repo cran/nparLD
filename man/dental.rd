@@ -19,8 +19,13 @@ Wiley, New York.\cr
 Brunner, E. and Langer, F. (1999). \emph{Nichtparametrische Analyse longitudinaler Daten}, 
 R. Oldenbourg Verlag, Munchen Wien.\cr
 
+Noguchi, K., Gel, Y.R., Brunner, E., and Konietschke, F. (2012). 
+nparLD: An R Software Package for the Nonparametric Analysis of Longitudinal Data in Factorial Experiments. 
+\emph{Journal of Statistical Software}, 50(12), 1-23.\cr
+
 Potthoff, R.F. and Roy, S.N. (1964). Generalized multivariate analysis of variance model useful especially for growth curve problems, 
-\emph{Biometrika}, 51, 313-326.\cr
+\emph{Biometrika}, 51, 313-326.
+
 }
 
 \seealso{\code{\link{nparLD}}, \code{\link{ld.f1}}, \code{\link[nlme]{Orthodont}}}

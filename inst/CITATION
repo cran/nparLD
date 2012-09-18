@@ -1,0 +1,22 @@
+citHeader("To cite nparLD in publications use:")
+
+citEntry(entry = "Article",
+  title        = "{nparLD}: An {R} Software Package for the Nonparametric Analysis of Longitudinal Data in Factorial Experiments",
+  author       = personList(as.person("Kimihiro Noguchi"),
+                   as.person("Yulia R. Gel"),
+                   as.person("Edgar Brunner"),
+                   as.person("Frank Konietschke")),
+  journal      = "Journal of Statistical Software",
+  year         = "2012",
+  volume       = "50",
+  number       = "12",
+  pages        = "1--23",
+  url          = "http://www.jstatsoft.org/v50/i12/",
+
+  textVersion  =
+  paste("Kimihiro Noguchi, Yulia R. Gel, Edgar Brunner, Frank Konietschke (2012).",
+        "nparLD: An R Software Package for the Nonparametric Analysis of Longitudinal Data in Factorial Experiments.",
+        "Journal of Statistical Software, 50(12), 1-23.",
+        "URL http://www.jstatsoft.org/v50/i12/.")
+)
+

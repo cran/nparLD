@@ -72,7 +72,6 @@ show.covariance=FALSE, order.warning=TRUE)
 
 #    initialize parameters
 
-           library(MASS)
 	   tlevel <- unique(time)
 	   slevel <- unique(subject)
 	   t <- length(tlevel)

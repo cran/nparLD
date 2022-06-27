@@ -70,8 +70,6 @@ time1.order=NULL, time2.order=NULL,plot.RTE=TRUE,show.covariance=FALSE,order.war
 	   if((sublen!=varlen)||(sublen!=tim1len)||(sublen!=tim2len))
 		stop("At least one of the input parameters (y, time1, time2, or subject) has a different length.")
 
-	library(MASS)
-
 	sorts<-unique(subject)
 	sort1<-unique(time1)
 	sort2<-unique(time2)

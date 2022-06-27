@@ -1,11 +1,11 @@
-0393399bba40cea091c5608d09a71b68 *DESCRIPTION
-bfb3a8d5669bef7525c4dfa5aa56f98b *NAMESPACE
-d1f34da57dad9676852a42b9d773b090 *R/f1.ld.f1.R
-da7151c8e40a7cfb0087ba9db121dccb *R/f1.ld.f2.R
-9eaf03597d9a53d170f16dc13b0d7804 *R/f2.ld.f1.R
+68e356ffa880cfcfe29a742d8e945580 *DESCRIPTION
+b3d73d6f2380cc3fe3a2c9096c5e5f5a *NAMESPACE
+7b96b0edb9f6b8a731c4a8c71e93cafe *R/f1.ld.f1.R
+49a77312cce851a45e347fac83d333ab *R/f1.ld.f2.R
+4367a90546e39f549a3cee01a2538d2c *R/f2.ld.f1.R
 864bbcc9ef8077d001030c676a11f474 *R/ld.ci.R
-0b5c950179b8bdf0004c03b38c60416b *R/ld.f1.R
-72a00588f11b881005e033b31e39782f *R/ld.f2.R
+deef4498af1fd0189d61f4da2cbf8e49 *R/ld.f1.R
+4bad43e4f4898cfe85422f0f047ce545 *R/ld.f2.R
 5713642acefe846dd416f10717be1493 *R/nparLD.R
 71992f77cfdcdcc3173016e5d2e07c54 *R/plot.nparLD.R
 c80038ac9411436246e5c6817d320b63 *R/print.nparLD.R
@@ -20,7 +20,7 @@ fe240d1b33c4764b489504958a6e257e *data/rat.rda
 082557b9ed7c8679d11d4718ec704bc5 *data/respiration.rda
 66e34691c9d2ffd837df58f7aac8b9f7 *data/shoulder.rda
 b7902e542b086bc53fdfddb2a6e1d989 *data/tree.rda
-16bdb1c03864be928ce04a548ddc5dcd *inst/CITATION
+a2ffd14240b75a3904c9a3a2c9788061 *inst/CITATION
 519e9c76d7e723de1de675b085d4898a *man/amylase.rd
 f44bd43339f09160b4b5190befaa65a5 *man/dental.rd
 0636699c8c6e00b01e322df53f1c3677 *man/edema.rd

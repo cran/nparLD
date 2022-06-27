@@ -76,9 +76,6 @@ order.warning=TRUE)
 	   if((sublen!=varlen)||(sublen!=tim1len)||(sublen!=tim2len)||(sublen!=grolen))
 		stop("At least one of the input parameters (y, time1, time2, group, or subject) has a different length.")
 
-
-	library(MASS)
-
 	sort1<-unique(time1)
 	sort2<-unique(time2)
 	sortg<-unique(group)

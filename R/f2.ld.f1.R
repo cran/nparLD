@@ -72,8 +72,6 @@ time.order=NULL, group1.order=NULL, group2.order=NULL,plot.RTE=TRUE,show.covaria
 	   if((sublen!=varlen)||(sublen!=timlen)||(sublen!=gro1len)||(sublen!=gro2len))
 		stop("At least one of the input parameters (y, time, group1, group2, or subject) has a different length.")
 
-	   library(MASS)
-
 	   tlevel <- unique(time)
 	   slevel <- unique(subject)
 	   g1level <- unique(group1)

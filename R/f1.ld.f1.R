@@ -635,7 +635,6 @@ description=TRUE, time.order=NULL, group.order=NULL,plot.RTE=TRUE,show.covarianc
 
 # main function
 
-	library(MASS)
 	glevel <- unique(group)
 	tlevel <- unique(time)
 	slevel <- unique(subject)

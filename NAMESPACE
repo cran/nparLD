@@ -1,4 +1,6 @@
 import(MASS)
+importFrom("graphics", "axis", "legend", "par", "points", "title")
+importFrom("stats", "model.frame", "pchisq", "pf", "pnorm", "pt", "qnorm")
 
 export(f1.ld.f1,f1.ld.f2,f2.ld.f1,ld.ci,ld.f1,ld.f2,nparLD,plot.nparLD,
 print.nparLD,summary.nparLD)
